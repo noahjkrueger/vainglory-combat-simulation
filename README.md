@@ -36,7 +36,43 @@ Set the level [1-12] for Hero One.
 Set the level [1-12] for Hero Two.
 
 ## Implemented Heroes
-todo: write up
+As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case insensitive)
+
+If it is not on this list, it is not implemented yet.
+- Miho
+  - Abilities and hero perk not implemented
 
 ## Implemented Items
-todo: write up
+As an argument for after items_one or items_two, you can set the item by typing one of these names (case insensitive)
+
+If it is not on this list, it is not implemented yet.
+- Red Tree
+  - SorrowBlade
+  - PoisonedShiv
+  - SerpentsMask
+    - passive not implemented
+  - WeaponBlade
+  - BreakingPoint
+  - BarbedNeedle
+  - TensionBow
+  - MinionsFoot
+  - BookOfEulogies
+  - PiercingSpear
+  - LuckyStrike
+  - HeavySteel
+  - BlazingSalvo
+  - SwiftShooter
+  - SixSins
+  - Spellsword
+    - passive not implemented
+  - BoneSaw
+  - TornadoTrigger
+  - TyrantsMonocle
+- Blue Tree
+  - not implemented
+- Defense
+  - not implemented
+- Utility
+  - not implemented
+- Consumables
+  - not implemented

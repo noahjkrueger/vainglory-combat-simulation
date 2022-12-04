@@ -7,6 +7,42 @@ import argparse
 def create_item(item):
     if item.upper() == "SORROWBLADE":
         return items.SorrowBlade()
+    elif item.upper() == "TYRANTSMONOCLE":
+        return items.TyrantsMonocle()
+    elif item.upper() == "TORNADOTRIGGER":
+        return items.TornadoTrigger()
+    elif item.upper() == "POISONEDSHIV":
+        return items.PoisonedShiv()
+    elif item.upper() == "BONESAW":
+        return items.BoneSaw()
+    elif item.upper() == "SPELLSWORD":
+        return items.Spellsword()
+    elif item.upper() == "SIXSINS":
+        return items.SixSins()
+    elif item.upper() == "SERPENTMASK":
+        return items.SerpentMask()
+    elif item.upper() == "SWIFTSHOOTER":
+        return items.SwiftShooter()
+    elif item.upper() == "BLAZINGSALVO":
+        return items.BlazingSalvo()
+    elif item.upper() == "HEAVYSTEEL":
+        return items.HeavySteel()
+    elif item.upper() == "LUCKYSTRIKE":
+        return items.LuckyStrike()
+    elif item.upper() == "PIERCINGSPEAR":
+        return items.PiercingSpear()
+    elif item.upper() == "BOOKOFEULOGIES":
+        return items.BookOfEulogies()
+    elif item.upper() == "MINIONSFOOT":
+        return items.MinionsFoot()
+    elif item.upper() == "TENSIONBOW":
+        return items.TensionBow()
+    elif item.upper() == "BARBEDNEEDLE":
+        return items.BarbedNeedle()
+    elif item.upper() == "BREAKINGPOINT":
+        return items.BreakingPoint()
+    elif item.upper() == "WEAPONBLADE":
+        return items.WeaponBlade()
     else:
         raise Exception(f"Invalid hero name '{item}' - misspelling, malformed or not implemented")
 
@@ -80,12 +116,12 @@ def main(args):
             break
         h1_hp.append(hero_one.stats['current_hp'])
         h2_hp.append(hero_two.stats['current_hp'])
-        h1_attack = hero_one.send_attack(milliseconds)
-        h2_attack = hero_two.send_attack(milliseconds)
+        h1_attack = hero_one.basic_attack(milliseconds)
+        h2_attack = hero_two.basic_attack(milliseconds)
         h1_ack = hero_one.receive_attack(milliseconds, h2_attack)
         h2_ack = hero_two.receive_attack(milliseconds, h1_attack)
-        hero_one.process_attack_ack(milliseconds, h2_ack)
-        hero_two.process_attack_ack(milliseconds, h1_ack)
+        hero_one.process_attack_ack(h2_ack)
+        hero_two.process_attack_ack(h1_ack)
         h1_dmg.append(h2_ack["true_dmg"] + h2_ack["cp_dmg"] + h2_ack["wp_dmg"])
         h2_dmg.append(h1_ack["true_dmg"] + h1_ack["cp_dmg"] + h1_ack["wp_dmg"])
         milliseconds += 1
