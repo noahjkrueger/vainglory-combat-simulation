@@ -29,12 +29,9 @@ class SorrowBlade(Item):
 
 class TornadoTrigger(Item):
     def __init__(self):
-        super().__init__("Tornado Trigger", 0, 0, 0, 0, 0, 0, 0.4, 0.35, 0.05, 0.0, 0.0, 0.0, 0, 0)
-        self._get_passives()
-
-    def _get_passives(self):
+        super().__init__("Tornado Trigger", 0, 0, 0, 0, 0, 0, 0.4, 0.35, 0.05, 0.0, 0.0, 0.0, 0, 0, 0)
         self.changes["item_passives"] = {
-            self.name: self.__passives()
+            self.name: self.__passives
         }
         self.__buff_speed_time = 0
 
