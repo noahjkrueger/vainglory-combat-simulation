@@ -53,33 +53,35 @@ If it is not on this list, it is not implemented yet.
 As an argument for after items_one or items_two, you can set the item by typing one of these names (case insensitive)
 
 If it is not on this list, it is not implemented yet.
-- Red Tree
-  - SorrowBlade
-  - PoisonedShiv
-  - SerpentsMask
-    - passive not implemented
-  - WeaponBlade
-  - BreakingPoint
-  - BarbedNeedle
-  - TensionBow
-  - MinionsFoot
-  - BookOfEulogies
-  - PiercingSpear
-  - LuckyStrike
-  - HeavySteel
-  - BlazingSalvo
-  - SwiftShooter
-  - SixSins
-  - Spellsword
-    - passive not implemented
-  - BoneSaw
-  - TornadoTrigger
-  - TyrantsMonocle
-- Blue Tree
-  - not implemented
-- Defense
-  - not implemented
-- Utility
-  - not implemented
-- Consumables
-  - not implemented
+### Red Tree
+- SorrowBlade
+- PoisonedShiv
+- SerpentsMask
+- WeaponBlade
+- BreakingPoint
+- BarbedNeedle
+- TensionBow
+- MinionsFoot
+- BookOfEulogies
+- PiercingSpear
+- LuckyStrike
+- HeavySteel
+- BlazingSalvo
+- SwiftShooter
+- SixSins
+- Spellsword
+- BoneSaw
+- TornadoTrigger
+- TyrantsMonocle
+
+### Blue Tree
+- not implemented
+
+### Defense
+- not implemented
+- 
+### Utility
+- not implemented
+- 
+### Consumables
+- not implemented

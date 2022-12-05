@@ -5,6 +5,7 @@ class Hero:
         self.name = name
         self.items = list()
         self.stats = {
+            "level": level,
             "stutter": stutter,
             "attack_cooldown": attack_cooldown,
             "attack_delay": attack_delay,
@@ -13,6 +14,7 @@ class Hero:
             "base_hp": calc_base_stat(hp_range, level),
             "current_hp": calc_base_stat(hp_range, level),
             "hp_regen": calc_base_stat(hp_regen_range, level),
+            "base_energy": calc_base_stat(energy_range, level),
             "energy": calc_base_stat(energy_range, level),
             "energy_regen": calc_base_stat(energy_regen_range, level),
             "wp": calc_base_stat(wp_range, level),
@@ -89,6 +91,8 @@ class Hero:
             the_attack['wp_dmg'] += self.stats["item_passives"]["Breaking Point"](self, hit)
         if hit and "Tension Bow" in self.stats["item_passives"].keys():
             the_attack['wp_dmg'] += self.stats["item_passives"]["Tension Bow"](self, hit)
+        if hit and "Spellsword" in self.stats["item_passives"].keys():
+            self.stats["item_passives"]["Spellsword"](self)
         # expected wp dmg on crit
         if self.stats["crit_chance"]:
             the_attack["wp_dmg"] *= (1 + self.stats["crit_damage"]) * min(self.stats["crit_chance"], 1)
@@ -116,10 +120,16 @@ class Hero:
 
     def process_attack_ack(self, ack):
         recover = 0
-        recover += self.stats["vampirism"] * ack["wp_dmg"] #TODO: max() w/ serp mask passive
+        if "Serpent Mask" in self.stats["item_passives"].keys():
+            life25, leftover = self.stats["item_passives"]["Serpent Mask"](self, ack["wp_dmg"])
+            recover += life25 + (self.stats["vampirism"] * leftover)
+        else:
+            recover += self.stats["vampirism"] * ack["wp_dmg"]
         recover += self.stats["crystal_lifesteal"] * ack["cp_dmg"] #TODO: max() w/ eve passive
         if "Breaking Point" in self.stats["item_passives"].keys():
             self.stats["item_passives"]["Breaking Point"](self, True, damage_done=ack["wp_dmg"])
+        if self.stats["mortal_wounds_timer"]:
+            recover /= 3
         self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + recover)
 
 

@@ -4,7 +4,7 @@ class Item:
         self.changes = {
             "base_hp": hp_buff,
             "hp_regen": hp_regen_buff,
-            "energy": energy_buff,
+            "base_energy": energy_buff,
             "energy_regen": energy_regen_buff,
             "wp": wp_buff,
             "cp": cp_buff,
@@ -192,7 +192,32 @@ class PiercingSpear(Item):
 class SerpentMask(Item):
     def __init__(self):
         super().__init__("Serpent Mask", 0, 0, 0, 0, 70, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0, 0, 0)
-        #TODO Passive: Your next 400-800 (level 1-12) points of weapon damage to enemy heroes has +25% lifesteal, recharges over 40 seconds. Passive: Barbed Needle
+        self.changes["item_passives"] = {
+            self.name: self._passives
+        }
+        self.__max_points = 0
+        self.__level = 0
+        self.__points = 0
+        self.__timer = 1000
+    def _passives(self, hero, dmg):
+        if self.__level == 0:
+            self.__level = hero.stats["level"]
+            self.__max_points = 400 + (self.__level * 400 / 11)
+            self.__points = self.__max_points
+        if self.__timer == 0:
+            self.__timer = 1000
+            self.__points = min(self.__points + self.__max_points / 40, self.__max_points)
+        else:
+            self.__timer -= 1
+        if self.__points:
+            if self.__points - dmg < 0:
+                tmp = self.__points
+                self.__points = 0
+                return 0.25 * self.__points, dmg - tmp
+            else:
+                self.__points -= dmg
+                return 0.25 * dmg, 0
+        return 0, 0
 
 
 class SixSins(Item):
@@ -203,7 +228,13 @@ class SixSins(Item):
 class Spellsword(Item):
     def __init__(self):
         super().__init__("Spellsword", 0, 0, 0, 2, 85, 0, 0.0, 0.0, 0.35, 0.0, 0.0, 0.0, 0, 0, 0)
-        # TODO Passive: Every basic attack grants you 4 energy (12 on heroes).
+        self.changes["item_passives"] = {
+            self.name: self._passives
+        }
+
+    @staticmethod
+    def _passives(hero, on_hero=True):
+        hero.stats["energy"] = max(hero.stats["base_energy"], hero.stats["energy"] + (12 if on_hero else 4))
 
 
 class TensionBow(Item):
