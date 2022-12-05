@@ -36,7 +36,6 @@ class TornadoTrigger(Item):
         self.__buff_speed_time = 0
 
     def __passives(self, hero, hit):
-        # 10% base mv speed on hero hit
         if hit:
             self.__buff_speed_time = 1200
             hero.stats["move_speed"] += 0.1 * hero.stats["base_move_speed"]
@@ -102,12 +101,12 @@ class BarbedNeedle(Item):
 
 class BlazingSalvo(Item):
     def __init__(self):
-        super().__init__("Blazing Salvo", 0, 0, 0, 0, 0, 0, 0, 0.2, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Blazing Salvo", 0, 0, 0, 0, 0, 0, 0.2, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
 
 
 class SwiftShooter(Item):
     def __init__(self):
-        super().__init__("Swift Shooter", 0, 0, 0, 0, 0, 0, 0, 0.1, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Swift Shooter", 0, 0, 0, 0, 0, 0, 0.1, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
 
 
 class BookOfEulogies(Item):
@@ -172,10 +171,12 @@ class LuckyStrike(Item):
 class MinionsFoot(Item):
     def __init__(self):
         super().__init__("Minion's Foot", 0, 0, 0, 0, 0, 0, 0.0, 0.1, 0.05, 0.0, 0.0, 0.0, 0, 0, 0)
-        self._get_passives()
+        self.changes["item_passives"] = {
+            self.name: self._passives
+        }
         self.__is_first = True
 
-    def _get_passives(self, hero):
+    def _passives(self, hero):
         if self.__is_first:
             self._normal_crit_perc = hero.stats["crit_chance"]
             hero.stats["crit_chance"] = 1.0
@@ -191,10 +192,7 @@ class PiercingSpear(Item):
 class SerpentMask(Item):
     def __init__(self):
         super().__init__("Serpent Mask", 0, 0, 0, 0, 70, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0, 0, 0)
-        self._get_passives()
-
-    def _get_passives(self):
-        self.changes["item_passives"] = dict()  #TODO Passive: Your next 400-800 (level 1-12) points of weapon damage to enemy heroes has +25% lifesteal, recharges over 40 seconds. Passive: Barbed Needle
+        #TODO Passive: Your next 400-800 (level 1-12) points of weapon damage to enemy heroes has +25% lifesteal, recharges over 40 seconds. Passive: Barbed Needle
 
 
 class SixSins(Item):
@@ -205,10 +203,7 @@ class SixSins(Item):
 class Spellsword(Item):
     def __init__(self):
         super().__init__("Spellsword", 0, 0, 0, 2, 85, 0, 0.0, 0.0, 0.35, 0.0, 0.0, 0.0, 0, 0, 0)
-        self._get_passives()
-
-    def _get_passives(self):
-        self.changes["item_passives"] = dict() # TODO Passive: Every basic attack grants you 4 energy (12 on heroes).
+        # TODO Passive: Every basic attack grants you 4 energy (12 on heroes).
 
 
 class TensionBow(Item):

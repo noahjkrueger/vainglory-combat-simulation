@@ -48,9 +48,7 @@ class Hero:
                     self.stats["cooldown"] = min(self.stats["cooldown"] + v, 0.35)
                 elif k == "move_speed":
                     self.stats["move_speed"] = max(self.stats["move_speed"], v)
-                elif k == "vampirism":
-                    self.stats["vampirism"] = max(self.stats["vampirism"], v)
-                elif k == "vampirism":
+                elif k == "crystal_lifesteal":
                     self.stats["crystal_lifesteal"] = max(self.stats["crystal_lifesteal"], v)
                 else:
                     self.stats[k] += v
