@@ -8,7 +8,7 @@ class Item:
             "energy_regen": energy_regen_buff,
             "wp": wp_buff,
             "cp": cp_buff,
-            "as": as_buff,
+            "bonus_as": as_buff,
             "move_speed": move_speed_buff,
             "crit_chance": crit_chance,
             "crit_damage": crit_damage,

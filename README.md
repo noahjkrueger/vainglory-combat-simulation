@@ -11,7 +11,7 @@ Some libraries are required for this tool. You can install them using this comma
 ## How to Use This Tool
 ### Quick overview:    
 
-    python3 simulate_combat.py [-h] [--items_one ITEMS_ONE [ITEMS_ONE ...]] [--items_two ITEMS_TWO [ITEMS_TWO ...]] [--level_one LEVEL_ONE] [--level_two LEVEL_TWO] hero_one hero_two
+    python3 simulate_combat.py [-h] [--items_one ITEMS_ONE [ITEMS_ONE ...]] [--items_two ITEMS_TWO [ITEMS_TWO ...]] [--level_one LEVEL_ONE] [--level_two LEVEL_TWO] [--stutter_one] [--stutter_two] hero_one hero_two
 
 ### Required Arguments
 #### hero_one
@@ -21,6 +21,12 @@ Set the Hero for Hero One. [Read about the implemented heroes here](#implemented
 Set the Hero for Hero One. [Read about the implemented heroes here](#implemented-heroes)
 
 ### Optional Arguments
+#### --level_one
+Set the level [1-12] for Hero One. 
+
+#### --level_two
+Set the level [1-12] for Hero Two.
+
 #### --items_one
 Hero One can have up to six items. The space-separated list after this flag will be used in the combat simulation. [Read
 about the implemented items here.](#implemented-items)
@@ -29,11 +35,12 @@ about the implemented items here.](#implemented-items)
 Hero Two can have up to six items. The space-separated list after this flag will be used in the combat simulation. [Read
 about the implemented items here.](#implemented-items)
 
-#### --level_one
-Set the level [1-12] for Hero One. 
+#### --stutter_one
+Set if Hero One preforms perfect stutter steps.
 
-#### --level_two
-Set the level [1-12] for Hero Two.
+#### --stutter_one
+Set if Hero Two preforms perfect stutter steps.
+
 
 ## Implemented Heroes
 As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case insensitive)

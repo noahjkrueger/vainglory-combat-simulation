@@ -1,10 +1,15 @@
 class Hero:
-    def __init__(self, name, level, hp_range, hp_regen_range, energy_range, energy_regen_range, wp_range, cp_range, as_range, armor_range, shield_range, attack_range, move_speed, ismelee, crtysal_lifesteal):
+    def __init__(self, name, stutter, attack_cooldown, attack_delay, ss_penalty, as_modifier, level, hp_range, hp_regen_range, energy_range, energy_regen_range, wp_range, cp_range, as_range, armor_range, shield_range, attack_range, move_speed, ismelee, crtysal_lifesteal):
         def calc_base_stat(stat_range, at_level):
             return (at_level - 1) * ((stat_range[1] - stat_range[0]) / 11) + stat_range[0]
         self.name = name
         self.items = list()
         self.stats = {
+            "stutter": stutter,
+            "attack_cooldown": attack_cooldown,
+            "attack_delay": attack_delay,
+            "ss_penalty": ss_penalty,
+            "as_modifier": as_modifier,
             "base_hp": calc_base_stat(hp_range, level),
             "current_hp": calc_base_stat(hp_range, level),
             "hp_regen": calc_base_stat(hp_regen_range, level),
@@ -12,7 +17,8 @@ class Hero:
             "energy_regen": calc_base_stat(energy_regen_range, level),
             "wp": calc_base_stat(wp_range, level),
             "cp": calc_base_stat(cp_range, level),
-            "as": calc_base_stat(as_range, level),
+            "base_as":  calc_base_stat(as_range, level),
+            "bonus_as": 0.0,
             "armor": calc_base_stat(armor_range, level),
             "shield": calc_base_stat(shield_range, level),
             "attack_range": attack_range,
@@ -64,7 +70,10 @@ class Hero:
             "mortal_wounds": 0
         }
         # Hero hits at this ms
-        hit = ms % round(1000 / self.stats["as"]) == 0
+        att_time = self.stats["attack_delay"] + (self.stats["attack_cooldown"] / (self.stats["base_as"]
+            + (self.stats["bonus_as"] * self.stats["as_modifier"]))) \
+            + (self.stats["ss_penalty"] if not self.stats["stutter"] else 0)
+        hit = ms % round(att_time) == 0
         # Calc wp dmg
         the_attack["wp_dmg"] = self.stats["wp"] if hit else 0
         # update item passives based on hit
@@ -114,10 +123,8 @@ class Hero:
         self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + recover)
 
 
+# https://www.vaingloryfire.com/vainglory/guide/a-beginners-guide-to-math-and-calculations-in-vainglory-with-updated-stats-for-objectives-creatures-and-minions-19763#AttackSpeed
 class Miho(Hero):
-    def __init__(self, level):
-        super().__init__("Miho", level, (775, 2084), (0, 0), (0, 0), (0, 0), (75, 152), (0, 0), (1.0, 1.363), (25, 75), (20, 55), 3, 4, True, 0)
-        self._get_passives()
-
-    def _get_passives(self):
-        self.stats["hero_passives"] = list()  # TODO
+    def __init__(self, level, stutter):
+        super().__init__("Miho", stutter, 800, 300, 200, 1.0, level, (775, 2084), (0, 0), (0, 0), (0, 0), (75, 152), (0, 0), (1.0, 1.363), (25, 75), (20, 55), 3, 4, True, 0)
+        #TODO: passive(s)

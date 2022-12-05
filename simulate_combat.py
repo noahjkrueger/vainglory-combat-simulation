@@ -47,14 +47,14 @@ def create_item(item):
         raise Exception(f"Invalid hero name '{item}' - misspelling, malformed or not implemented")
 
 
-def create_player(hero_name, build, level):
+def create_player(hero_name, build, level, stutter):
     if not 1 <= level <= 12:
         raise Exception(f"Invalid level '{level}' - valid values are in range [1, 12]")
     item_objs = list()
     for item in build:
         item_objs.append(create_item(item))
     if hero_name.upper() == "MIHO":
-        hero_obj = heroes.Miho(level)
+        hero_obj = heroes.Miho(level, stutter)
     else:
         raise Exception(f"Invalid hero name '{hero_name}' - misspelling, malformed or not implemented")
     hero_obj.init_build(item_objs)
@@ -103,14 +103,24 @@ def main(args):
         default=1,
         help="The level of Hero Two"
     )
+    parser.add_argument(
+        "--stutter_one",
+        action='store_true',
+        help="Hero One uses stutter stepping"
+    )
+    parser.add_argument(
+        "--stutter_two",
+        action='store_true',
+        help="Hero Two uses stutter stepping"
+    )
     args = parser.parse_args(args)
-    hero_one = create_player(args.hero_one, args.items_one, args.level_one)
-    hero_two = create_player(args.hero_two, args.items_two, args.level_two)
+    hero_one = create_player(args.hero_one, args.items_one, args.level_one, args.stutter_one)
+    hero_two = create_player(args.hero_two, args.items_two, args.level_two, args.stutter_two)
     h1_hp = list()
     h2_hp = list()
     h1_dmg = list()
     h2_dmg = list()
-    milliseconds = 0
+    milliseconds = 1
     while True:
         if hero_one.stats['current_hp'] <= 0 or hero_two.stats['current_hp'] <= 0:
             break
