@@ -1,35 +1,66 @@
 class Item:
-    def __init__(self, name, hp_buff, hp_regen_buff, energy_buff, energy_regen_buff, wp_buff, cp_buff, as_buff, crit_chance, crit_damage, cooldown, move_speed_buff, vampirism, armor_peirce, shield_perice, crystal_lifesteal):
+    def __init__(self, name):
         self.name = name
-        self.changes = {
-            "base_hp": hp_buff,
-            "hp_regen": hp_regen_buff,
-            "base_energy": energy_buff,
-            "energy_regen": energy_regen_buff,
-            "wp": wp_buff,
-            "cp": cp_buff,
-            "bonus_as": as_buff,
-            "move_speed": move_speed_buff,
-            "crit_chance": crit_chance,
-            "crit_damage": crit_damage,
-            "vampirism": vampirism,
-            "cooldown": cooldown,
-            "armor_peirce": armor_peirce,
-            "shield_peirce": shield_perice,
-            "item_passives": dict(),
-            "item_actives": dict(),
-            "crystal_lifesteal": crystal_lifesteal
-        }
+        self.changes = dict()
 
+    def _set_base_hp(self, val):
+        self.changes["base_hp"] = val
+
+    def _set_hp_regen(self, val):
+        self.changes["hp_regen"] = val
+
+    def _set_base_energy(self, val):
+        self.changes["base_energy"] = val
+
+    def _set_energy_regen(self, val):
+        self.changes["energy_regen"] = val
+
+    def _set_wp(self, val):
+        self.changes["wp"] = val
+
+    def _set_cp(self, val):
+        self.changes["cp"] = val
+
+    def _set_bonus_as(self, val):
+        self.changes["bonus_as"] = val
+
+    def _set_move_speed(self, val):
+        self.changes["move_speed"] = val
+
+    def _set_crit_chance(self, val):
+        self.changes["crit_chance"] = val
+
+    def _set_crit_damage(self, val):
+        self.changes["crit_damage"] = val
+
+    def _set_vampirism(self, val):
+        self.changes["vampirism"] = val
+
+    def _set_cooldown(self, val):
+        self.changes["cooldown"] = val
+
+    def _set_armor_peirce(self, val):
+        self.changes["armor_peirce"] = val
+
+    def _set_shield_peirce(self, val):
+        self.changes["shield_peirce"] = val
+
+    def _set_crystal_lifesteal(self, val):
+        self.changes["crystal_lifesteal"] = val
 
 class SorrowBlade(Item):
     def __init__(self):
-        super().__init__("Sorrow Blade", 0, 0, 0, 0, 125, 0, 0, 0.0, 0.0, 0, 0.0, 0, 0, 0, 0)
+        super().__init__("Sorrow Blade")
+        super()._set_wp(125)
 
 
 class TornadoTrigger(Item):
     def __init__(self):
-        super().__init__("Tornado Trigger", 0, 0, 0, 0, 0, 0, 0.4, 0.35, 0.05, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Tornado Trigger")
+        super()._set_bonus_as(0.4)
+        super()._set_crit_chance(0.35)
+        super()._set_crit_damage(0.05)
+
         self.changes["item_passives"] = {
             self.name: self.__passives
         }
@@ -47,12 +78,19 @@ class TornadoTrigger(Item):
 
 class TyrantsMonocle(Item):
     def __init__(self):
-        super().__init__("Tyrants Monocle", 0, 0, 0, 0, 50, 0, 0, 0.35, 0.15, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Tyrants Monocle")
+        super()._set_wp(50)
+        super()._set_crit_damage(0.15)
+        super()._set_crit_chance(0.35)
 
 
 class PoisonedShiv(Item):
     def __init__(self):
-        super().__init__("Poisoned Shiv", 0, 0, 0, 0, 35, 0, 0.35, 0.0, 0.0, 0.0, 0.0, 0.1, 0, 0, 0)
+        super().__init__("Poisoned Shiv")
+        super()._set_wp(35)
+        super()._set_bonus_as(0.35)
+        super()._set_vampirism(0.1)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -67,7 +105,11 @@ class PoisonedShiv(Item):
 
 class BoneSaw(Item):
     def __init__(self):
-        super().__init__("Bone Saw", 0, 0, 0, 0, 30, 0, 0.3, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2, 0, 0)
+        super().__init__("Bone Saw")
+        super()._set_wp(30)
+        super()._set_armor_peirce(0.2)
+        super()._set_bonus_as(0.3)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -88,7 +130,10 @@ class BoneSaw(Item):
 
 class BarbedNeedle(Item):
     def __init__(self):
-        super().__init__("Barbed Needle", 0, 0, 0, 0, 10, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0, 0, 0)
+        super().__init__("Barbed Needle")
+        super()._set_wp(10)
+        super()._set_vampirism(0.1)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -101,17 +146,21 @@ class BarbedNeedle(Item):
 
 class BlazingSalvo(Item):
     def __init__(self):
-        super().__init__("Blazing Salvo", 0, 0, 0, 0, 0, 0, 0.2, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Blazing Salvo")
+        super()._set_bonus_as(0.2)
 
 
 class SwiftShooter(Item):
     def __init__(self):
-        super().__init__("Swift Shooter", 0, 0, 0, 0, 0, 0, 0.1, 0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
-
+        super().__init__("Swift Shooter")
+        super()._set_bonus_as(0.1)
 
 class BookOfEulogies(Item):
     def __init__(self):
-        super().__init__("Book of Eulogies", 0, 0, 0, 0, 5, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.05, 0, 0, 0)
+        super().__init__("Book of Eulogies")
+        super()._set_wp(5)
+        super()._set_vampirism(0.05)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -123,7 +172,10 @@ class BookOfEulogies(Item):
 
 class BreakingPoint(Item):
     def __init__(self):
-        super().__init__("Breaking Point", 0, 0, 0, 0, 50, 0, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Breaking Point")
+        super()._set_wp(50)
+        super()._set_bonus_as(0.2)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -155,22 +207,29 @@ class BreakingPoint(Item):
 
 class HeavySteel(Item):
     def __init__(self):
-        super().__init__("Heavy Steel", 0, 0, 0, 0, 45, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Heavy Steel")
+        super()._set_wp(45)
 
 
 class WeaponBlade(Item):
     def __init__(self):
-        super().__init__("Weapon Blade", 0, 0, 0, 0, 10, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Weapon Blade")
+        super()._set_wp(10)
 
 
 class LuckyStrike(Item):
     def __init__(self):
-        super().__init__("Lucky Strike", 0, 0, 0, 0, 0, 0, 0.0, 0.2, 0.05, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Lucky Strike")
+        super()._set_crit_chance(0.2)
+        super()._set_crit_damage(0.05)
 
 
 class MinionsFoot(Item):
     def __init__(self):
-        super().__init__("Minion's Foot", 0, 0, 0, 0, 0, 0, 0.0, 0.1, 0.05, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Minion's Foot")
+        super()._set_crit_chance(0.1)
+        super()._set_crit_damage(0.05)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -186,12 +245,17 @@ class MinionsFoot(Item):
 
 class PiercingSpear(Item):
     def __init__(self):
-        super().__init__("Piercing Spear", 0, 0, 0, 0, 15, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0, 0)
+        super().__init__("Piercing Spear")
+        super()._set_wp(15)
+        super()._set_armor_peirce(0.1)
 
 
 class SerpentMask(Item):
     def __init__(self):
-        super().__init__("Serpent Mask", 0, 0, 0, 0, 70, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.15, 0, 0, 0)
+        super().__init__("Serpent Mask")
+        super()._set_wp(70)
+        super()._set_vampirism(0.15)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -199,14 +263,15 @@ class SerpentMask(Item):
         self.__level = 0
         self.__points = 0
         self.__timer = 1000
+
     def _passives(self, hero, dmg):
         if self.__level == 0:
             self.__level = hero.stats["level"]
-            self.__max_points = 400 + (self.__level * 400 / 11)
+            self.__max_points = 400 + ((self.__level - 1) * 400 / 11)
             self.__points = self.__max_points
         if self.__timer == 0:
             self.__timer = 1000
-            self.__points = min(self.__points + self.__max_points / 40, self.__max_points)
+            self.__points = min(self.__points + (self.__max_points / 40), self.__max_points)
         else:
             self.__timer -= 1
         if self.__points:
@@ -222,12 +287,17 @@ class SerpentMask(Item):
 
 class SixSins(Item):
     def __init__(self):
-        super().__init__("Six Sins", 0, 0, 0, 0, 25, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Six Sins")
+        super()._set_wp(25)
 
 
 class Spellsword(Item):
     def __init__(self):
-        super().__init__("Spellsword", 0, 0, 0, 2, 85, 0, 0.0, 0.0, 0.35, 0.0, 0.0, 0.0, 0, 0, 0)
+        super().__init__("Spellsword")
+        super()._set_wp(85)
+        super()._set_cooldown(0.35)
+        super()._set_energy_regen(2)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }
@@ -239,7 +309,10 @@ class Spellsword(Item):
 
 class TensionBow(Item):
     def __init__(self):
-        super().__init__("Tension Bow", 0, 0, 0, 0, 40, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.3, 0, 0)
+        super().__init__("Tension Bow")
+        super()._set_wp(40)
+        super()._set_armor_peirce(0.3)
+
         self.changes["item_passives"] = {
             self.name: self._passives
         }

@@ -44,7 +44,45 @@ def create_item(item):
     elif item.upper() == "WEAPONBLADE":
         return items.WeaponBlade()
     else:
-        raise Exception(f"Invalid hero name '{item}' - misspelling, malformed or not implemented")
+        raise Exception(f"Invalid item name '{item}' - misspelling, malformed or not implemented")
+
+def create_hero(hero_name, level, stutter):
+    if hero_name.upper() == "AMAEL":
+        return heroes.Amael(level, stutter)
+    elif hero_name.upper() == "ADAGIO":
+        return heroes.Adagio(level, stutter)
+    elif hero_name.upper() == "ALPHA":
+        return heroes.Alpha(level, stutter)
+    elif hero_name.upper() == "ANKA":
+        return heroes.Anka(level, stutter)
+    elif hero_name.upper() == "ARDAN":
+        return heroes.Ardan(level, stutter)
+    elif hero_name.upper() == "BAPTISTE":
+        return heroes.Baptiste(level, stutter)
+    elif hero_name.upper() == "BARON":
+        return heroes.Baron(level, stutter)
+    elif hero_name.upper() == "BLACKFEATHER":
+        return heroes.Blackfeather(level, stutter)
+    elif hero_name.upper() == "CAINE":
+        return heroes.Caine(level, stutter)
+    elif hero_name.upper() == "CATHERINE":
+        return heroes.Catherine(level, stutter)
+    elif hero_name.upper() == "CELESTE":
+        return heroes.Celeste(level, stutter)
+    elif hero_name.upper() == "CHURNWALKER":
+        return heroes.Churnwalker(level, stutter)
+    elif hero_name.upper() == "FLICKER":
+        return heroes.Flicker(level, stutter)
+    elif hero_name.upper() == "FORTRESS":
+        return heroes.Fortress(level, stutter)
+    elif hero_name.upper() == "GLAIVE":
+        return heroes.Glaive(level, stutter)
+    elif hero_name.upper() == "GRACE":
+        return heroes.Grace(level, stutter)
+    elif hero_name.upper() == "MIHO":
+        return heroes.Miho(level, stutter)
+    else:
+        raise Exception(f"Invalid hero name '{hero_name}' - misspelling, malformed or not implemented")
 
 
 def create_player(hero_name, build, level, stutter):
@@ -53,10 +91,7 @@ def create_player(hero_name, build, level, stutter):
     item_objs = list()
     for item in build:
         item_objs.append(create_item(item))
-    if hero_name.upper() == "MIHO":
-        hero_obj = heroes.Miho(level, stutter)
-    else:
-        raise Exception(f"Invalid hero name '{hero_name}' - misspelling, malformed or not implemented")
+    hero_obj = create_hero(hero_name, level, stutter)
     hero_obj.init_build(item_objs)
     return hero_obj
 

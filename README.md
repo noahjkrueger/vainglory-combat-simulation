@@ -46,8 +46,46 @@ Set if Hero Two preforms perfect stutter steps.
 As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case insensitive)
 
 If it is not on this list, it is not implemented yet.
+- Amael
+  - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
+- Adagio
+  - Abilities and hero perk not implemented
+- Alpha
+  - Abilities and hero perk not implemented
+- Anka
+  - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
+- Ardan
+  - Abilities and hero perk not implemented
+- Baptiste
+  - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
+- Baron
+  - Abilities and hero perk not implemented
+- Blackfeather
+  - Abilities and hero perk not implemented
+- Caine
+  - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
+- Catherine
+  - Abilities and hero perk not implemented
+- Celeste
+  - Abilities and hero perk not implemented
+- Churnwalker
+  - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
+- Flicker
+  - Abilities and hero perk not implemented
+- Fortress
+  - Abilities and hero perk not implemented
+- Glaive
+  - Abilities and hero perk not implemented
+- Grace
+  - Abilities and hero perk not implemented
 - Miho
   - Abilities and hero perk not implemented
+  - Attack Speed Factors estimated due to lack of documentation
 
 ## Implemented Items
 As an argument for after items_one or items_two, you can set the item by typing one of these names (case insensitive)
