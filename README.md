@@ -1,5 +1,10 @@
 # VainGlory Combat Simulation
 This tool creates a visual representation of a 1v1 combat simulation.
+Stats are taken from in game,
+[this VGFire guide](https://www.vaingloryfire.com/vainglory/guide/a-beginners-guide-to-math-and-calculations-in-vainglory-with-updated-stats-for-objectives-creatures-and-minions-19763#AttackSpeed)
+, and [VGFire Hero Wiki](https://www.vaingloryfire.com/vainglory/wiki/heroes).
+
+Some information is not available online, so a best guess is in place. This is documented.
 
 ## Getting Started
 Clone this repo or download the .zip archive. 
