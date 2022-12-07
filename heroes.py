@@ -8,9 +8,8 @@ class Hero:
             "current_hp": 0, "hp_regen": 0, "base_energy": 0, "energy": 0, "energy_regen": 0, "wp": 0, "cp": 0,
             "base_as": 0, "bonus_as": 0.0, "armor": 0, "shield": 0, "attack_range": 0, "move_speed": 0,
             "base_move_speed": 0, "vampirism": 0.0, "crit_chance": 0.0, "cooldown": 0.0, "armor_peirce": 0.0,
-            "shield_peirce": 0.0, "item_passives": dict(), "item_actives": dict(), "hero_passives": dict(),
-            "mortal_wounds_timer": 0, "crystal_lifesteal": 0, "uses_focus": False, "base_focus": 0,  "focus": 0,
-            "focus_regen": 0
+            "shield_peirce": 0.0, "hero_passives": dict(), "mortal_wounds_timer": 0, "crystal_lifesteal": 0,
+            "uses_focus": False, "base_focus": 0,  "focus": 0, "focus_regen": 0,
         }
 
     def _is_melee(self):
@@ -68,15 +67,10 @@ class Hero:
 
     def init_build(self, build):
         for item in build:
-            self.items.append(item.name)
+            self.items.append(item)
             for k, v in item.changes.items():
-                if k == "item_passives":
-                    for i, d in v.items():
-                        self.stats["item_passives"][i] = d
-                elif k == "item_actives":
-                    for i, d in v.items():
-                        self.stats["item_passives"][i] = d
-                elif k == "vampirism":
+                # These do not stack or have limits
+                if k == "vampirism":
                     self.stats["vampirism"] = max(self.stats["vampirism"], v)
                 elif k == "cooldown":
                     self.stats["cooldown"] = min(self.stats["cooldown"] + v, 0.35)
@@ -84,8 +78,10 @@ class Hero:
                     self.stats["move_speed"] = max(self.stats["move_speed"], v)
                 elif k == "crystal_lifesteal":
                     self.stats["crystal_lifesteal"] = max(self.stats["crystal_lifesteal"], v)
+                # Regular Stat change
                 else:
                     self.stats[k] += v
+        # Set current HP
         self.stats["current_hp"] = self.stats["base_hp"]
 
     def basic_attack(self, ms):
@@ -95,36 +91,32 @@ class Hero:
             "cp_dmg": 0.0,
             "armor_peirce": self.stats["armor_peirce"],
             "shield_peirce": self.stats["shield_peirce"],
-            "mortal_wounds": 0
+            "mortal_wounds": 0,
+            "hit": False,
+            "on_minion": False,
+            "on_hero": True,
+            "with_basic": True
         }
         # Hero hits at this ms
         att_time = self.stats["attack_delay"] + (self.stats["attack_cooldown"] / (self.stats["base_as"]
             + (self.stats["bonus_as"] * self.stats["as_modifier"]))) \
             + (self.stats["ss_penalty"] if not self.stats["stutter"] else 0)
-        hit = ms % round(att_time) == 0
-        # Calc wp dmg
-        the_attack["wp_dmg"] = self.stats["wp"] if hit else 0
-        # update item passives based on hit
-        if "Tornado Trigger" in self.stats["item_passives"].keys():
-            self.stats["item_passives"]["Tornado Trigger"](self, hit)
-        if "Bone Saw" in self.stats["item_passives"].keys():
-            the_attack["armor_peirce"] += self.stats["item_passives"]["Bone Saw"](hit)
-        if hit and "Poisoned Shiv" in self.stats["item_passives"].keys():
-            the_attack["mortal_wounds"] = self.stats["item_passives"]["Poisoned Shiv"](self)
-        if hit and "Minion's Foot" in self.stats["item_passives"].keys():
-            self.stats["item_passives"]["Minion's Foot"](self)
-        if hit and "Breaking Point" in self.stats["item_passives"].keys():
-            the_attack['wp_dmg'] += self.stats["item_passives"]["Breaking Point"](self, hit)
-        if hit and "Tension Bow" in self.stats["item_passives"].keys():
-            the_attack['wp_dmg'] += self.stats["item_passives"]["Tension Bow"](self, hit)
-        if hit and "Spellsword" in self.stats["item_passives"].keys():
-            self.stats["item_passives"]["Spellsword"](self)
-        # expected wp dmg on crit
+        if ms % round(att_time) == 0:
+            the_attack["hit"] = True
+        # Base Weapon Damage
+        the_attack["wp_dmg"] = self.stats["wp"] if the_attack["hit"] else 0
+        # Consider Item Buffs
+        for item in self.items:
+            try:
+                the_attack = item.on_hit(self, the_attack)
+            except AttributeError:
+                continue
+        # expected weapon dmg on crit
         if self.stats["crit_chance"]:
             the_attack["wp_dmg"] *= (1 + self.stats["crit_damage"]) * min(self.stats["crit_chance"], 1)
         return the_attack
 
-    def receive_attack(self, ms, the_attack):
+    def receive_attack(self, the_attack):
         ack = {
             "true_dmg": the_attack['true_dmg']
         }
@@ -135,6 +127,11 @@ class Hero:
         cp_with_p = the_attack["cp_dmg"] * the_attack["shield_peirce"]
         ack["cp_dmg"] = cp_with_p + cp_without_p
         ack["wp_dmg"] = wp_with_p + wp_without_p
+        for item in self.items:
+            try:
+                ack = item.on_damage_recive(self, the_attack)
+            except AttributeError:
+                continue
         # take the damage
         self.stats["current_hp"] -= (ack["true_dmg"] + ack["wp_dmg"] + ack["cp_dmg"])
         # update mortal wounds timer
@@ -145,18 +142,17 @@ class Hero:
         return ack
 
     def process_attack_ack(self, ack):
-        recover = 0
-        if "Serpent Mask" in self.stats["item_passives"].keys():
-            life25, leftover = self.stats["item_passives"]["Serpent Mask"](self, ack["wp_dmg"])
-            recover += life25 + (self.stats["vampirism"] * leftover)
-        else:
-            recover += self.stats["vampirism"] * ack["wp_dmg"]
-        recover += self.stats["crystal_lifesteal"] * ack["cp_dmg"] #TODO: max() w/ eve passive
-        if "Breaking Point" in self.stats["item_passives"].keys():
-            self.stats["item_passives"]["Breaking Point"](self, True, damage_done=ack["wp_dmg"])
+        result = {
+            "recover": 0
+        }
+        for item in self.items:
+            try:
+                result = item.post_hit(self, ack, result)
+            except AttributeError:
+                continue
         if self.stats["mortal_wounds_timer"]:
-            recover /= 3
-        self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + recover)
+            result["recover"] /= 3
+        self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + result["recover"])
 
 
 class Amael(Hero):
@@ -418,6 +414,7 @@ class Grace(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(73, 152)
         # TODO: hero perk and abilities
+
 
 class Miho(Hero):
     def __init__(self, level, stutter):

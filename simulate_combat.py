@@ -4,6 +4,7 @@ from sys import argv
 import argparse
 
 
+# Is there a better way to do this?
 def create_item(item):
     if item.upper() == "SORROWBLADE":
         return items.SorrowBlade()
@@ -46,6 +47,8 @@ def create_item(item):
     else:
         raise Exception(f"Invalid item name '{item}' - misspelling, malformed or not implemented")
 
+
+# Is there a better way to do this?
 def create_hero(hero_name, level, stutter):
     if hero_name.upper() == "AMAEL":
         return heroes.Amael(level, stutter)
@@ -85,6 +88,7 @@ def create_hero(hero_name, level, stutter):
         raise Exception(f"Invalid hero name '{hero_name}' - misspelling, malformed or not implemented")
 
 
+# Create a hero with items and other options
 def create_player(hero_name, build, level, stutter):
     if not 1 <= level <= 12:
         raise Exception(f"Invalid level '{level}' - valid values are in range [1, 12]")
@@ -97,6 +101,7 @@ def create_player(hero_name, build, level, stutter):
 
 
 def main(args):
+    # Define arguments
     parser = argparse.ArgumentParser(
         prog="python3 simulate_combat.py",
         description="Generates a graph representing a 1v1 battle between two heroes",
@@ -148,35 +153,47 @@ def main(args):
         action='store_true',
         help="Hero Two uses stutter stepping"
     )
+    # Parse Args
     args = parser.parse_args(args)
     hero_one = create_player(args.hero_one, args.items_one, args.level_one, args.stutter_one)
     hero_two = create_player(args.hero_two, args.items_two, args.level_two, args.stutter_two)
+    # Collect data to form 4 lines
     h1_hp = list()
     h2_hp = list()
     h1_dmg = list()
     h2_dmg = list()
+    # Start at 1 ms to avoid instantaneous attack
     milliseconds = 1
     while True:
         if hero_one.stats['current_hp'] <= 0 or hero_two.stats['current_hp'] <= 0:
             break
+        # HP at this ms
         h1_hp.append(hero_one.stats['current_hp'])
         h2_hp.append(hero_two.stats['current_hp'])
+        # Attacks (possibly) delivered at this time
+        # Maybe make points?
         h1_attack = hero_one.basic_attack(milliseconds)
         h2_attack = hero_two.basic_attack(milliseconds)
-        h1_ack = hero_one.receive_attack(milliseconds, h2_attack)
-        h2_ack = hero_two.receive_attack(milliseconds, h1_attack)
+        # Get hit by opposing attack
+        h1_ack = hero_one.receive_attack(h2_attack)
+        h2_ack = hero_two.receive_attack(h1_attack)
+        # Do post attack processing
         hero_one.process_attack_ack(h2_ack)
         hero_two.process_attack_ack(h1_ack)
+        # Add damage at this ms to graph
         h1_dmg.append(h2_ack["true_dmg"] + h2_ack["cp_dmg"] + h2_ack["wp_dmg"])
         h2_dmg.append(h1_ack["true_dmg"] + h1_ack["cp_dmg"] + h1_ack["wp_dmg"])
         milliseconds += 1
+    # Plot lines
     plt.plot(h1_dmg, label=f"Hero 1: ({hero_one.name}) dmg to ({hero_two.name})")
     plt.plot(h1_hp, label=f"Hero 1: {hero_one.name} health points")
     plt.plot(h2_dmg, label=f"Hero 2: ({hero_two.name}) dmg to ({hero_one.name})")
     plt.plot(h2_hp, label=f"Hero 2: {hero_two.name} health points")
+    # Legend and Lablels
     plt.legend()
     plt.xlabel("Milliseconds")
     plt.ylabel("Points")
+    # Save to file
     plt.savefig(f"{hero_one.name}_vs_{hero_two.name}")
 
 

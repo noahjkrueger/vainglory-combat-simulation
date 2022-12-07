@@ -48,6 +48,8 @@ class Item:
     def _set_crystal_lifesteal(self, val):
         self.changes["crystal_lifesteal"] = val
 
+
+# Start of Red Tree
 class SorrowBlade(Item):
     def __init__(self):
         super().__init__("Sorrow Blade")
@@ -61,19 +63,20 @@ class TornadoTrigger(Item):
         super()._set_crit_chance(0.35)
         super()._set_crit_damage(0.05)
 
-        self.changes["item_passives"] = {
-            self.name: self.__passives
-        }
         self.__buff_speed_time = 0
 
-    def __passives(self, hero, hit):
-        if hit:
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"]:
             self.__buff_speed_time = 1200
             hero.stats["move_speed"] += 0.1 * hero.stats["base_move_speed"]
-        elif self.__buff_speed_time > 0:
+        return the_attack
+
+    def post_hit(self, hero, ack, result):
+        if self.__buff_speed_time > 0:
             self.__buff_speed_time -= 1
-            if self.__buff_speed_time == 0:
-                hero.stats["move_speed"] = hero.stats["base_move_speed"]
+        else:
+            hero.stats["move_speed"] = hero.stats["base_move_speed"]
+        return result
 
 
 class TyrantsMonocle(Item):
@@ -91,16 +94,16 @@ class PoisonedShiv(Item):
         super()._set_bonus_as(0.35)
         super()._set_vampirism(0.1)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__hit_num_odd = False
 
-    def _passives(self, hero, kill_minion=False, with_basic=False):
-        if kill_minion:
-            hero.stats["current_hp"] += 25 if with_basic else 10
-        self.__hit_num_odd = not self.__hit_num_odd
-        return 1200 if not self.__hit_num_odd else 0
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"] and the_attack["kill_minion"]:
+            new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
+            hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
+        if the_attack["hit"]:
+            self.__hit_num_odd = not self.__hit_num_odd
+            the_attack["mortal_wounds"] = max(the_attack["mortal_wounds"], 1200 if not self.__hit_num_odd else 0)
+        return the_attack
 
 
 class BoneSaw(Item):
@@ -110,22 +113,23 @@ class BoneSaw(Item):
         super()._set_armor_peirce(0.2)
         super()._set_bonus_as(0.3)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__stacks = 0
         self.__timer = 0
 
-    def _passives(self, hit):
-        if hit:
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"]:
             self.__stacks = min(self.__stacks + 1, 5)
             self.__timer = 3000
-        elif self.__timer > 0:
+        the_attack["armor_peirce"] = max(self.__stacks * 0.1 + the_attack["armor_peirce"], the_attack["armor_peirce"])
+        return the_attack
+
+    def post_hit(self, hero, ack, result):
+        if self.__timer > 0:
             self.__timer -= 1
         if self.__timer == 0 and self.__stacks > 0:
             self.__stacks -= 1
             self.__timer = 100 # not accurate cuz am lazy. real implementation would count time between attacks
-        return self.__stacks * 0.1
+        return result
 
 
 class BarbedNeedle(Item):
@@ -134,14 +138,12 @@ class BarbedNeedle(Item):
         super()._set_wp(10)
         super()._set_vampirism(0.1)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
-
     @staticmethod
-    def _passives(hero, kill_minion=False, with_basic=False):
-        if kill_minion:
-            hero.stats["current_hp"] += 25 if with_basic else 10
+    def on_hit(hero, the_attack):
+        if the_attack["hit"] and the_attack["kill_minion"]:
+            new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
+            hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
+        return the_attack
 
 
 class BlazingSalvo(Item):
@@ -155,19 +157,19 @@ class SwiftShooter(Item):
         super().__init__("Swift Shooter")
         super()._set_bonus_as(0.1)
 
+
 class BookOfEulogies(Item):
     def __init__(self):
         super().__init__("Book of Eulogies")
         super()._set_wp(5)
         super()._set_vampirism(0.05)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
-
-    def _passives(self, hero, kill_minion=False, with_basic=False):
-        if kill_minion:
-            hero.stats["current_hp"] += 25 if with_basic else 10
+    @staticmethod
+    def on_hit(hero, the_attack):
+        if the_attack["hit"] and the_attack["kill_minion"]:
+            new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
+            hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
+        return the_attack
 
 
 class BreakingPoint(Item):
@@ -176,33 +178,38 @@ class BreakingPoint(Item):
         super()._set_wp(50)
         super()._set_bonus_as(0.2)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__stacks = 0
         self.__timer = 0
         self.__leftover = 0
 
-    def _passives(self, hero, hit, damage_done=0):
-        if hit:
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"]:
             self.__timer = 2500
-            if damage_done == 0:
-                return 5 * self.__stacks
-            damage_done += self.__leftover
+            the_attack["wp_dmg"] += 5 * self.__stacks
+        return the_attack
+
+    def post_hit(self, hero, ack, result):
+        decay_stacks = True
+        if ack["wp_damage"]:
+            acc_dmg = ack["wp_damage"] + self.__leftover
             while True:
                 dmg_needed = 100 + self.__stacks * (5 if hero.stats["ismelee"] else 10)
-                if damage_done >= dmg_needed:
+                if acc_dmg >= dmg_needed:
+                    decay_stacks = False
                     if self.__stacks < 35:
                         self.__stacks += 1
-                    damage_done -= dmg_needed
+                    acc_dmg -= dmg_needed
                 else:
-                    self.__leftover = damage_done
+                    self.__leftover = acc_dmg
                     break
-        elif self.__timer > 0:
-            self.__timer -= 1
-        else:
-            self.__stacks -= 1
-            self.__timer = 200
+
+        if decay_stacks:
+            if self.__timer > 0:
+                self.__timer -= 1
+            else:
+                self.__stacks -= 1
+                self.__timer = 200
+        return result
 
 
 class HeavySteel(Item):
@@ -230,17 +237,18 @@ class MinionsFoot(Item):
         super()._set_crit_chance(0.1)
         super()._set_crit_damage(0.05)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__is_first = True
+        self._normal_crit_perc = 0.0
 
-    def _passives(self, hero):
-        if self.__is_first:
-            self._normal_crit_perc = hero.stats["crit_chance"]
-            hero.stats["crit_chance"] = 1.0
-        else:
-            hero.stats["crit_chance"] = self._normal_crit_perc
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"]:
+            if self.__is_first:
+                self._normal_crit_perc = hero.stats["crit_chance"]
+                hero.stats["crit_chance"] = 1.0
+                self.__is_first = False
+            else:
+                hero.stats["crit_chance"] = self._normal_crit_perc
+        return the_attack
 
 
 class PiercingSpear(Item):
@@ -256,15 +264,12 @@ class SerpentMask(Item):
         super()._set_wp(70)
         super()._set_vampirism(0.15)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__max_points = 0
         self.__level = 0
         self.__points = 0
         self.__timer = 1000
 
-    def _passives(self, hero, dmg):
+    def post_hit(self, hero, ack, result):
         if self.__level == 0:
             self.__level = hero.stats["level"]
             self.__max_points = 400 + ((self.__level - 1) * 400 / 11)
@@ -275,14 +280,15 @@ class SerpentMask(Item):
         else:
             self.__timer -= 1
         if self.__points:
-            if self.__points - dmg < 0:
+            if self.__points - ack["wp_dmg"] < 0:
                 tmp = self.__points
                 self.__points = 0
-                return 0.25 * self.__points, dmg - tmp
+                recover = (0.25 * self.__points) + (ack["wp_dmg"] - tmp)
             else:
-                self.__points -= dmg
-                return 0.25 * dmg, 0
-        return 0, 0
+                self.__points -= ack["wp_dmg"]
+                recover = 0.25 * ack["wp_dmg"]
+            result["recover"] = recover
+        return result
 
 
 class SixSins(Item):
@@ -298,13 +304,12 @@ class Spellsword(Item):
         super()._set_cooldown(0.35)
         super()._set_energy_regen(2)
 
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
-
     @staticmethod
-    def _passives(hero, on_hero=True):
-        hero.stats["energy"] = max(hero.stats["base_energy"], hero.stats["energy"] + (12 if on_hero else 4))
+    def on_hit(hero, the_attack):
+        if the_attack["hit"]:
+            hero.stats["energy"] = max(hero.stats["base_energy"],
+                                       hero.stats["energy"] + (12 if the_attack["on_hero"] else 4))
+        return the_attack
 
 
 class TensionBow(Item):
@@ -312,16 +317,24 @@ class TensionBow(Item):
         super().__init__("Tension Bow")
         super()._set_wp(40)
         super()._set_armor_peirce(0.3)
-
-        self.changes["item_passives"] = {
-            self.name: self._passives
-        }
         self.__timer = 0
 
-    def _passives(self, hero, hit):
-        if hit and self.__timer == 0:
+    def on_hit(self, hero, the_attack):
+        if the_attack["hit"] and self.__timer == 0:
             self.__timer = 6000
-            return 100 + hero.stats["wp"]
-        elif self.__timer > 0:
+            the_attack["wp_dmg"] += 100 + hero.stats["wp"]
+        return the_attack
+
+    def post_hit(self, hero, ack, result):
+        if self.__timer > 0:
             self.__timer -= 1
-        return 0
+        return result
+
+
+# Start of Defense Tree
+
+# Start of Blue Tree
+
+# Start of Utility Tree
+
+# Start of Consumables
