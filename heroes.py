@@ -5,7 +5,8 @@ class Hero:
         self.stats = {
             "level": level, "stutter": stutter, "crit_damage": 0.5, "ismelee": False,
             "attack_cooldown": 0, "attack_delay": 0, "ss_penalty": 0, "as_modifier": 0, "base_hp": 0,
-            "current_hp": 0, "hp_regen": 0, "base_energy": 0, "energy": 0, "energy_regen": 0, "wp": 0, "cp": 0,
+            "current_hp": 0, "hp_regen": 0, "base_energy": 0, "energy": 0, "energy_regen": 0,
+            "energy_regen_multi": 1.0, "wp": 0, "cp": 0,
             "base_as": 0, "bonus_as": 0.0, "armor": 0, "shield": 0, "attack_range": 0, "move_speed": 0,
             "base_move_speed": 0, "vampirism": 0.0, "crit_chance": 0.0, "cooldown": 0.0, "armor_peirce": 0.0,
             "shield_peirce": 0.0, "crystal_lifesteal": 0, "uses_focus": False, "base_focus": 0,  "focus": 0,
@@ -174,7 +175,20 @@ class Hero:
         if self.timers["debuff"]["mortal_wounds_timer"]:
             result["recover"] /= 3
         self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + result["recover"])
+        self.regen_energy()
 
+    def regen_energy(self):
+        regen = self.stats["energy_regen"] * self.stats["energy_regen_multi"]
+        self.stats["energy"] = max(self.stats["base_energy"], self.stats["energy"] + regen)
+
+    def warn_p(self):
+        print(f"\033[93mWARN h-p:\033[0m \033[1m'{self.name}'\033[0m HERO ABILITY either not implemented or considered in combat. May skew results.")
+
+    def warn_a(self):
+        print(f"\033[93mWARN h-a:\033[0m \033[1m'{self.name}'\033[0m ABILITIES either not implemented or considered in combat. May skew results.")
+
+    def warn_g(self):
+        print(f"\033[93mWARN h-g:\033[0m \033[1m'{self.name}'\033[0m ATTACK SPEED FACTORS are estimated. May skew results.")
 
 class Amael(Hero):
     def __init__(self, level, stutter):
@@ -191,6 +205,9 @@ class Amael(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(86, 152)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
+        self.warn_g()
 
 
 class Adagio(Hero):
@@ -207,6 +224,8 @@ class Adagio(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(75, 117)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Alpha(Hero):
@@ -222,6 +241,8 @@ class Alpha(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(83, 124)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Anka(Hero):
@@ -239,6 +260,9 @@ class Anka(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(82, 152)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
+        self.warn_g()
 
 
 class Ardan(Hero):
@@ -255,6 +279,8 @@ class Ardan(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(80, 140)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Baptiste(Hero):
@@ -272,6 +298,9 @@ class Baptiste(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(78, 167)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
+        self.warn_g()
 
 
 class Baron(Hero):
@@ -288,6 +317,8 @@ class Baron(Hero):
         super()._set_shield(21, 57)
         super()._set_wp(71, 130)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Blackfeather(Hero):
@@ -304,6 +335,8 @@ class Blackfeather(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(81, 160)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Caine(Hero):
@@ -318,6 +351,9 @@ class Caine(Hero):
         super()._set_shield(20, 58)
         super()._set_wp(82, 159)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
+        self.warn_g()
 
 
 class Catherine(Hero):
@@ -335,6 +371,8 @@ class Catherine(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(74, 141)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Celeste(Hero):
@@ -350,6 +388,8 @@ class Celeste(Hero):
         super()._set_armor(25, 75)
         super()._set_shield(20, 55)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Churnwalker(Hero):
@@ -367,6 +407,8 @@ class Churnwalker(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(80, 165)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Flicker(Hero):
@@ -384,6 +426,8 @@ class Flicker(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(77, 155)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Fortress(Hero):
@@ -401,6 +445,8 @@ class Fortress(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(73, 156)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Glaive(Hero):
@@ -418,6 +464,8 @@ class Glaive(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(70, 156)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Grace(Hero):
@@ -435,6 +483,8 @@ class Grace(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(73, 152)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
 
 
 class Miho(Hero):
@@ -451,3 +501,6 @@ class Miho(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(75, 152)
         # TODO: hero perk and abilities
+        self.warn_a()
+        self.warn_p()
+        self.warn_g()

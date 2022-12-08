@@ -15,6 +15,9 @@ class Item:
     def _set_energy_regen(self, val):
         self.changes["energy_regen"] = val
 
+    def _set_energy_regen_multi(self, val):
+        self.changes["energy_regen_multi"] = val
+
     def _set_wp(self, val):
         self.changes["wp"] = val
 
@@ -47,6 +50,18 @@ class Item:
 
     def _set_crystal_lifesteal(self, val):
         self.changes["crystal_lifesteal"] = val
+
+    def _set_armor(self, val):
+        self.changes["armor"] = val
+
+    def _set_shield(self, val):
+        self.changes["shield"] = val
+
+    def warn_a(self):
+        print(f"\033[93m WARN i-a:\033[0m \033[1m'{self.name}'\033[0m ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+    def warn_p(self):
+        print(f"\033[93m WARN i-p:\033[0m \033[1m'{self.name}'\033[0m PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 # Start of Red Tree
@@ -347,6 +362,65 @@ class TensionBow(Item):
 
 
 # Start of Defense Tree
+class Aegis(Item):
+    def __init__(self):
+        super().__init__("Aegis")
+        super()._set_shield(45)
+        super()._set_armor(45)
+        super()._set_base_hp(200)
+        # TODO: Activate: Reflex Block (45s cooldown)
+        self.warn_a()
+
+
+class AtlasPauldron(Item):
+    def __init__(self):
+        super().__init__("Atlas Pauldron")
+        super()._set_armor(65)
+         # TODO: Activate: Maim nearby enemies, lowering their attack speed by 50% of their total for 4s in a 5-meter range. Additionaly reduces weapon power damage by 30%. (45s cooldown)
+        self.warn_a()
+
+
+class CapacitorPlate(Item):
+    def __init__(self):
+        super().__init__("Capacitor Plate")
+        super()._set_shield(30)
+        super()._set_armor(30)
+        super()._set_base_hp(400)
+        super()._set_cooldown(0.15)
+        super()._set_energy_regen_multi(0.025)
+        # TODO: Passive: Your heals and barriers are 15% stronger. Passive: Your heals and barriers also grant other allied heroes bonus movement speed for 2s. (10s cooldown per hero)
+        self.warn_p()
+
+
+class CelestialShroud(Item):
+    def __init__(self):
+        super().__init__("Celestial Shroud")
+        super()._set_shield(95)
+        # TODO: Passive: Grants immunity to abilities and damaging debuffs. Disabled for 35s shortly after negating ability damage.
+        self.warn_p()
+
+
+
+class CoatofPlates(Item):
+    def __init__(self):
+        super().__init__("Coat of Plates")
+        super()._set_armor(55)
+
+
+class Crucible(Item):
+    def __init__(self):
+        super().__init__("Crucible")
+        super()._set_base_hp(550)
+        # TODO: Activate: Trigger Reflex Block for you and nearby teammates. (75s cooldown)
+        self.warn_a()
+
+
+class KineticShield(Item):
+    def __init__(self):
+        super().__init__("Kinetic Shield")
+        super()._set_shield(55)
+
+
 
 # Start of Blue Tree
 
