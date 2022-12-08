@@ -162,8 +162,7 @@ def main(args):
     h2_hp = list()
     h1_dmg = list()
     h2_dmg = list()
-    # Start at 1 ms to avoid instantaneous attack
-    milliseconds = 1
+    milliseconds = 0
     while True:
         if hero_one.stats['current_hp'] <= 0 or hero_two.stats['current_hp'] <= 0:
             break
@@ -172,8 +171,8 @@ def main(args):
         h2_hp.append(hero_two.stats['current_hp'])
         # Attacks (possibly) delivered at this time
         # Maybe make points?
-        h1_attack = hero_one.basic_attack(milliseconds)
-        h2_attack = hero_two.basic_attack(milliseconds)
+        h1_attack = hero_one.basic_attack()
+        h2_attack = hero_two.basic_attack()
         # Get hit by opposing attack
         h1_ack = hero_one.receive_attack(h2_attack)
         h2_ack = hero_two.receive_attack(h1_attack)

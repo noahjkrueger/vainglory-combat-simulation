@@ -65,13 +65,13 @@ class TornadoTrigger(Item):
 
         self.__buff_speed_time = 0
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"]:
             self.__buff_speed_time = 1200
             hero.stats["move_speed"] += 0.1 * hero.stats["base_move_speed"]
         return the_attack
 
-    def post_hit(self, hero, ack, result):
+    def post_basic(self, hero, ack, result):
         if self.__buff_speed_time > 0:
             self.__buff_speed_time -= 1
         else:
@@ -96,7 +96,7 @@ class PoisonedShiv(Item):
 
         self.__hit_num_odd = False
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
@@ -116,14 +116,14 @@ class BoneSaw(Item):
         self.__stacks = 0
         self.__timer = 0
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"]:
             self.__stacks = min(self.__stacks + 1, 5)
             self.__timer = 3000
         the_attack["armor_peirce"] = max(self.__stacks * 0.1 + the_attack["armor_peirce"], the_attack["armor_peirce"])
         return the_attack
 
-    def post_hit(self, hero, ack, result):
+    def post_basic(self, hero, ack, result):
         if self.__timer > 0:
             self.__timer -= 1
         if self.__timer == 0 and self.__stacks > 0:
@@ -139,7 +139,7 @@ class BarbedNeedle(Item):
         super()._set_vampirism(0.1)
 
     @staticmethod
-    def on_hit(hero, the_attack):
+    def on_basic(hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
@@ -165,7 +165,7 @@ class BookOfEulogies(Item):
         super()._set_vampirism(0.05)
 
     @staticmethod
-    def on_hit(hero, the_attack):
+    def on_basic(hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
@@ -182,16 +182,16 @@ class BreakingPoint(Item):
         self.__timer = 0
         self.__leftover = 0
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"]:
             self.__timer = 2500
             the_attack["wp_dmg"] += 5 * self.__stacks
         return the_attack
 
-    def post_hit(self, hero, ack, result):
+    def post_basic(self, hero, ack, result):
         decay_stacks = True
-        if ack["wp_damage"]:
-            acc_dmg = ack["wp_damage"] + self.__leftover
+        if ack["wp_dmg"]:
+            acc_dmg = ack["wp_dmg"] + self.__leftover
             while True:
                 dmg_needed = 100 + self.__stacks * (5 if hero.stats["ismelee"] else 10)
                 if acc_dmg >= dmg_needed:
@@ -240,7 +240,7 @@ class MinionsFoot(Item):
         self.__is_first = True
         self._normal_crit_perc = 0.0
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"]:
             if self.__is_first:
                 self._normal_crit_perc = hero.stats["crit_chance"]
@@ -269,7 +269,7 @@ class SerpentMask(Item):
         self.__points = 0
         self.__timer = 1000
 
-    def post_hit(self, hero, ack, result):
+    def post_basic(self, hero, ack, result):
         if self.__level == 0:
             self.__level = hero.stats["level"]
             self.__max_points = 400 + ((self.__level - 1) * 400 / 11)
@@ -305,7 +305,7 @@ class Spellsword(Item):
         super()._set_energy_regen(2)
 
     @staticmethod
-    def on_hit(hero, the_attack):
+    def on_basic(hero, the_attack):
         if the_attack["hit"]:
             hero.stats["energy"] = max(hero.stats["base_energy"],
                                        hero.stats["energy"] + (12 if the_attack["on_hero"] else 4))
@@ -319,13 +319,13 @@ class TensionBow(Item):
         super()._set_armor_peirce(0.3)
         self.__timer = 0
 
-    def on_hit(self, hero, the_attack):
+    def on_basic(self, hero, the_attack):
         if the_attack["hit"] and self.__timer == 0:
             self.__timer = 6000
             the_attack["wp_dmg"] += 100 + hero.stats["wp"]
         return the_attack
 
-    def post_hit(self, hero, ack, result):
+    def post_basic(self, hero, ack, result):
         if self.__timer > 0:
             self.__timer -= 1
         return result

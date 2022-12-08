@@ -8,8 +8,17 @@ class Hero:
             "current_hp": 0, "hp_regen": 0, "base_energy": 0, "energy": 0, "energy_regen": 0, "wp": 0, "cp": 0,
             "base_as": 0, "bonus_as": 0.0, "armor": 0, "shield": 0, "attack_range": 0, "move_speed": 0,
             "base_move_speed": 0, "vampirism": 0.0, "crit_chance": 0.0, "cooldown": 0.0, "armor_peirce": 0.0,
-            "shield_peirce": 0.0, "hero_passives": dict(), "mortal_wounds_timer": 0, "crystal_lifesteal": 0,
-            "uses_focus": False, "base_focus": 0,  "focus": 0, "focus_regen": 0,
+            "shield_peirce": 0.0, "crystal_lifesteal": 0, "uses_focus": False, "base_focus": 0,  "focus": 0,
+            "focus_regen": 0
+        }
+        self.timers = {
+            "debuff": {
+                "mortal_wounds_timer": 0,
+            },
+            "attack": {
+                "attack_delay": 0,
+                "attack_cooldown": 0
+            }
         }
 
     def _is_melee(self):
@@ -19,7 +28,10 @@ class Hero:
         self.stats["attack_cooldown"] = cooldown
         self.stats["attack_delay"] = delay
         self.stats["ss_penalty"] = ss_penalty
-        self.stats["as_mpdifier"] = modifier
+        self.stats["as_modifier"] = modifier
+        self.timers["attack"]["attack_delay"] = delay
+        if self.stats["stutter"]:
+            self.timers["attack"]["attack_delay"] += ss_penalty
 
     def _set_base_hp(self, at_level_1, at_level_12):
         self.stats["base_hp"] = self._calc_base_stat((at_level_1, at_level_12))
@@ -84,7 +96,7 @@ class Hero:
         # Set current HP
         self.stats["current_hp"] = self.stats["base_hp"]
 
-    def basic_attack(self, ms):
+    def basic_attack(self):
         the_attack = {
             "true_dmg": 0.0,
             "wp_dmg": 0.0,
@@ -94,21 +106,30 @@ class Hero:
             "mortal_wounds": 0,
             "hit": False,
             "on_minion": False,
+            "kill_minion": False,
             "on_hero": True,
             "with_basic": True
         }
         # Hero hits at this ms
-        att_time = self.stats["attack_delay"] + (self.stats["attack_cooldown"] / (self.stats["base_as"]
-            + (self.stats["bonus_as"] * self.stats["as_modifier"]))) \
-            + (self.stats["ss_penalty"] if not self.stats["stutter"] else 0)
-        if ms % round(att_time) == 0:
+        if not self.timers["attack"]["attack_cooldown"]:
+            if self.timers["attack"]["attack_delay"]:
+                self.timers["attack"]["attack_delay"] -= 1
+                return the_attack
             the_attack["hit"] = True
+            self.timers["attack"]["attack_cooldown"] = round(self.stats["attack_cooldown"] / (self.stats["base_as"]
+                + (self.stats["bonus_as"] * self.stats["as_modifier"])))
+            if not self.stats["stutter"]:
+                self.timers["attack"]["attack_delay"] += self.stats["ss_penalty"]
+            self.timers["attack"]["attack_delay"] = self.stats["attack_delay"]
+        elif self.timers["attack"]["attack_cooldown"] > 0:
+            self.timers["attack"]["attack_cooldown"] -= 1
+            return the_attack
         # Base Weapon Damage
         the_attack["wp_dmg"] = self.stats["wp"] if the_attack["hit"] else 0
-        # Consider Item Buffs
+        # Consider Item Buffs for basic attacks
         for item in self.items:
             try:
-                the_attack = item.on_hit(self, the_attack)
+                the_attack = item.on_basic(self, the_attack)
             except AttributeError:
                 continue
         # expected weapon dmg on crit
@@ -120,13 +141,14 @@ class Hero:
         ack = {
             "true_dmg": the_attack['true_dmg']
         }
-        # calc wp and cp dmg recived
+        # calc wp and cp dmg received
         wp_without_p = (the_attack["wp_dmg"] / (1 + (self.stats["armor"] / 100))) * (1 - the_attack["armor_peirce"])
         cp_without_p = the_attack["cp_dmg"] / (1 + (self.stats["shield"] / 100)) * (1 - the_attack["shield_peirce"])
         wp_with_p = the_attack["wp_dmg"] * the_attack["armor_peirce"]
         cp_with_p = the_attack["cp_dmg"] * the_attack["shield_peirce"]
         ack["cp_dmg"] = cp_with_p + cp_without_p
         ack["wp_dmg"] = wp_with_p + wp_without_p
+        # check to see if any items trigger on receiving damage
         for item in self.items:
             try:
                 ack = item.on_damage_recive(self, the_attack)
@@ -134,11 +156,10 @@ class Hero:
                 continue
         # take the damage
         self.stats["current_hp"] -= (ack["true_dmg"] + ack["wp_dmg"] + ack["cp_dmg"])
-        # update mortal wounds timer
-        if the_attack["mortal_wounds"] > 0:
-            self.stats["mortal_wounds_timer"] = the_attack["mortal_wounds"]
-        elif self.stats["mortal_wounds_timer"] > 0:
-            self.stats["mortal_wounds_timer"] -= 1
+        # update debuff timers
+        for effect, time in self.timers["debuff"].items():
+            if time > 0:
+                self.timers[effect] -= 1
         return ack
 
     def process_attack_ack(self, ack):
@@ -147,10 +168,10 @@ class Hero:
         }
         for item in self.items:
             try:
-                result = item.post_hit(self, ack, result)
+                result = item.post_basic(self, ack, result)
             except AttributeError:
                 continue
-        if self.stats["mortal_wounds_timer"]:
+        if self.timers["debuff"]["mortal_wounds_timer"]:
             result["recover"] /= 3
         self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + result["recover"])
 
