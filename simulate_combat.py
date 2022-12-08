@@ -45,7 +45,8 @@ def create_item(item):
     elif item.upper() == "WEAPONBLADE":
         return items.WeaponBlade()
     else:
-        raise Exception(f"Invalid item name '{item}' - misspelling, malformed or not implemented")
+        print(f"\033[91mERR i-i:\033[0m Invalid item name \033[1m'{item}'\033[0m - misspelling, malformed or not implemented")
+        exit(-1)
 
 
 # Is there a better way to do this?
@@ -85,13 +86,17 @@ def create_hero(hero_name, level, stutter):
     elif hero_name.upper() == "MIHO":
         return heroes.Miho(level, stutter)
     else:
-        raise Exception(f"Invalid hero name '{hero_name}' - misspelling, malformed or not implemented")
+        print(f"\033[91mERR h-i:\033[0m Invalid hero name \033[1m'{hero_name}'\033[0m - misspelling, malformed or not implemented")
+        exit(-1)
 
 
 # Create a hero with items and other options
 def create_player(hero_name, build, level, stutter):
     if not 1 <= level <= 12:
-        raise Exception(f"Invalid level '{level}' - valid values are in range [1, 12]")
+        print(f"\033[91mERR h-l:\033[0m Invalid level \033[1m'{hero_name}'\033[0m - valid values are in range [1, 12]")
+        exit(-1)
+    if len(build) > 6:
+        print(f"\033[93mWARN i-c:\033[0m \033[1m Too Many Items \033[0m - more than 6 items provided; inaccurate to actual gameplay. May skew results.")
     item_objs = list()
     for item in build:
         item_objs.append(create_item(item))
@@ -164,7 +169,13 @@ def main(args):
     h2_dmg = list()
     milliseconds = 0
     while True:
-        if hero_one.stats['current_hp'] <= 0 or hero_two.stats['current_hp'] <= 0:
+        if hero_one.stats['current_hp'] <= 0:
+            h1_hp.append(0)
+            h2_hp.append(hero_two.stats['current_hp'])
+            break
+        if hero_two.stats['current_hp'] <= 0:
+            h1_hp.append(hero_one.stats['current_hp'])
+            h2_hp.append(0)
             break
         # HP at this ms
         h1_hp.append(hero_one.stats['current_hp'])
@@ -184,17 +195,20 @@ def main(args):
         h2_dmg.append(h1_ack["true_dmg"] + h1_ack["cp_dmg"] + h1_ack["wp_dmg"])
         milliseconds += 1
     # Plot lines
-    plt.plot(h1_dmg, label=f"Hero 1: ({hero_one.name}) dmg to ({hero_two.name})")
-    plt.plot(h1_hp, label=f"Hero 1: {hero_one.name} health points")
-    plt.plot(h2_dmg, label=f"Hero 2: ({hero_two.name}) dmg to ({hero_one.name})")
-    plt.plot(h2_hp, label=f"Hero 2: {hero_two.name} health points")
+    plt.plot([x if h1_dmg[x] > 0 else None for x in range(0, len(h1_dmg))], [h1_dmg[y] if h1_dmg[y] > 0  else None for y in range(0, len(h1_dmg))], 'b.', label=f"Hero 1 DMG", zorder=15)
+    plt.plot(h1_hp,  label=f"Hero 1 HP", zorder=5)
+    plt.plot([x if h2_dmg[x] > 0 else None for x in range(0, len(h2_dmg))], [h2_dmg[y] if h2_dmg[y] > 0 else None for y in range(0, len(h2_dmg))], 'r.', label=f"Hero 2 DMG", zorder=10)
+    plt.plot(h2_hp,  label=f"Hero 2 HP", zorder=0)
     # Legend, labels and grid
     plt.legend()
+    plt.title(f"Hero 1: {hero_one.name} vs Hero 2: {hero_two.name}")
     plt.xlabel("Milliseconds")
     plt.ylabel("Points")
     plt.grid()
+    plt.margins(0.01)
+    plt.tight_layout()
     # Save to file
-    plt.savefig(f"{hero_one.name}_vs_{hero_two.name}")
+    plt.savefig(f"{hero_one.name}_vs_{hero_two.name}", dpi=300)
 
 
 if __name__ == '__main__':
