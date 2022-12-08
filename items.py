@@ -105,6 +105,11 @@ class PoisonedShiv(Item):
             the_attack["mortal_wounds"] = max(the_attack["mortal_wounds"], 1200 if not self.__hit_num_odd else 0)
         return the_attack
 
+    @staticmethod
+    def post_basic(hero, ack, result):
+        result["recover"] = ack["wp_dmg"] * hero.stats["vampirism"]
+        return result
+
 
 class BoneSaw(Item):
     def __init__(self):
@@ -145,6 +150,11 @@ class BarbedNeedle(Item):
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
         return the_attack
 
+    @staticmethod
+    def post_basic(hero, ack, result):
+        result["recover"] = ack["wp_dmg"] * hero.stats["vampirism"]
+        return result
+
 
 class BlazingSalvo(Item):
     def __init__(self):
@@ -170,6 +180,11 @@ class BookOfEulogies(Item):
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
         return the_attack
+
+    @staticmethod
+    def post_basic(hero, ack, result):
+        result["recover"] = ack["wp_dmg"] * hero.stats["vampirism"]
+        return result
 
 
 class BreakingPoint(Item):
