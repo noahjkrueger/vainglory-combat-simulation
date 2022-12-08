@@ -188,10 +188,11 @@ def main(args):
     plt.plot(h1_hp, label=f"Hero 1: {hero_one.name} health points")
     plt.plot(h2_dmg, label=f"Hero 2: ({hero_two.name}) dmg to ({hero_one.name})")
     plt.plot(h2_hp, label=f"Hero 2: {hero_two.name} health points")
-    # Legend and Lablels
+    # Legend, labels and grid
     plt.legend()
     plt.xlabel("Milliseconds")
     plt.ylabel("Points")
+    plt.grid()
     # Save to file
     plt.savefig(f"{hero_one.name}_vs_{hero_two.name}")
 

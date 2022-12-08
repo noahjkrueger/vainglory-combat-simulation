@@ -311,9 +311,8 @@ class SerpentMask(Item):
             self.__timer -= 1
         if self.__points:
             if self.__points - ack["wp_dmg"] < 0:
-                tmp = self.__points
+                recover = (0.25 * self.__points) + (hero.stats["vampirism"] * (ack["wp_dmg"] - self.__points))
                 self.__points = 0
-                recover = (0.25 * self.__points) + (ack["wp_dmg"] - tmp)
             else:
                 self.__points -= ack["wp_dmg"]
                 recover = 0.25 * ack["wp_dmg"]

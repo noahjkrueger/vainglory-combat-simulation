@@ -157,10 +157,12 @@ class Hero:
                 continue
         # take the damage
         self.stats["current_hp"] -= (ack["true_dmg"] + ack["wp_dmg"] + ack["cp_dmg"])
+        if the_attack["mortal_wounds"]:
+            self.timers["debuff"]["mortal_wounds_timer"] = the_attack["mortal_wounds"]
         # update debuff timers
         for effect, time in self.timers["debuff"].items():
             if time > 0:
-                self.timers[effect] -= 1
+                self.timers["debuff"][effect] -= 1
         return ack
 
     def process_attack_ack(self, ack):
@@ -172,7 +174,7 @@ class Hero:
                 result = item.post_basic(self, ack, result)
             except AttributeError:
                 continue
-        if self.timers["debuff"]["mortal_wounds_timer"]:
+        if self.timers["debuff"]["mortal_wounds_timer"] > 0:
             result["recover"] /= 3
         self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + result["recover"])
         self.regen_energy()
