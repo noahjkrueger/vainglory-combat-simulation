@@ -120,6 +120,7 @@ If it is not on this list, it is not implemented yet.
 - MetalJacket
 - Oakheart
 - Pulseweave
+- ProtectorContract
 - ReflexBlock
 - RooksDecree
 - SlumberingHusk

@@ -78,6 +78,8 @@ def create_item(item):
         return items.Oakheart()
     elif item.upper() == "PULSEWEAVE":
         return items.Pulseweave()
+    elif item.upper() == "PROTECTORCONTRACT":
+        return items.ProtectorContract()
     elif item.upper() == "REFLEXBLOCK":
         return items.ReflexBlock()
     elif item.upper() == "ROOKSDECREE":
