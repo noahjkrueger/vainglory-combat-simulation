@@ -3,6 +3,12 @@ import heroes, items
 from sys import argv
 import argparse
 
+def err(code, msg):
+    print(f"\033[91mERR {code}:\033[0m {msg}")
+    exit(-1)
+
+def warn(code, msg):
+    print(f"\033[93mWARN {code}:\033[0m {msg}")
 
 # Is there a better way to do this?
 def create_item(item):
@@ -44,9 +50,44 @@ def create_item(item):
         return items.BreakingPoint()
     elif item.upper() == "WEAPONBLADE":
         return items.WeaponBlade()
+    elif item.upper() == "AEGIS":
+        return items.Aegis()
+    elif item.upper() == "CAPACITOR PLATE":
+        return items.CapacitorPlate()
+    elif item.upper() == "CELESTIALSHROUD":
+        return items.CelestialShroud()
+    elif item.upper() == "COATOFPLATES":
+        return items.CoatofPlates()
+    elif item.upper() == "CRUCIBLE":
+        return items.Crucible()
+    elif item.upper() == "DRAGONHEART":
+        return items.Dragonheart()
+    elif item.upper() == "FOUNTIANOFRENEWAL":
+        return items.FountainOfRenewal()
+    elif item.upper() == "KINETICSHIELD":
+        return items.KineticShield()
+    elif item.upper() == "LIFESPRING":
+        return items.Lifespring()
+    elif item.upper() == "LIGHTARMOR":
+        return items.LightArmor()
+    elif item.upper() == "LIGHTSHIELD":
+        return items.LightShield()
+    elif item.upper() == "METALJACKET":
+        return items.MetalJacket()
+    elif item.upper() == "OAKHEART":
+        return items.Oakheart()
+    elif item.upper() == "PULSEWEAVE":
+        return items.Pulseweave()
+    elif item.upper() == "REFLEXBLOCK":
+        return items.ReflexBlock()
+    elif item.upper() == "ROOKSDECREE":
+        return items.RooksDecree()
+    elif item.upper() == "SLUMBERINGHUSK":
+        return items.SlumberingHusk()
+    elif item.upper() == "WARMAIL":
+        return items.Warmail()
     else:
-        print(f"\033[91mERR i-i:\033[0m Invalid item name \033[1m'{item}'\033[0m - misspelling, malformed or not implemented")
-        exit(-1)
+        err("i-i", "Invalid item name \033[1m'{item}'\033[0m - misspelling, malformed or not implemented.")
 
 
 # Is there a better way to do this?
@@ -86,17 +127,16 @@ def create_hero(hero_name, level, stutter):
     elif hero_name.upper() == "MIHO":
         return heroes.Miho(level, stutter)
     else:
-        print(f"\033[91mERR h-i:\033[0m Invalid hero name \033[1m'{hero_name}'\033[0m - misspelling, malformed or not implemented")
-        exit(-1)
+        err("h-i", "Invalid hero name \033[1m'{hero_name}'\033[0m - misspelling, malformed or not implemented.")
 
 
 # Create a hero with items and other options
 def create_player(hero_name, build, level, stutter):
     if not 1 <= level <= 12:
-        print(f"\033[91mERR h-l:\033[0m Invalid level \033[1m'{hero_name}'\033[0m - valid values are in range [1, 12]")
-        exit(-1)
+        err("h-l", "\033[0m Invalid level \033[1m'{hero_name}'\033[0m - valid values are in range [1, 12]")
     if len(build) > 6:
-        print(f"\033[93mWARN i-c:\033[0m \033[1m Too Many Items \033[0m - more than 6 items provided; inaccurate to actual gameplay. May skew results.")
+        warn("i-c",
+             "\033[1m Too Many Items\033[0m - more than 6 items provided; inaccurate to actual gameplay. May skew results.")
     item_objs = list()
     for item in build:
         item_objs.append(create_item(item))
@@ -158,8 +198,10 @@ def main(args):
         action='store_true',
         help="Hero Two uses stutter stepping"
     )
+    animation = ["/", "|", "\\", "-"]
     # Parse Args
     args = parser.parse_args(args)
+    print("\033[95m\033[1mRunning Simulation....\033[0m")
     hero_one = create_player(args.hero_one, args.items_one, args.level_one, args.stutter_one)
     hero_two = create_player(args.hero_two, args.items_two, args.level_two, args.stutter_two)
     # Collect data to form 4 lines
@@ -209,6 +251,7 @@ def main(args):
     plt.tight_layout()
     # Save to file
     plt.savefig(f"{hero_one.name}_vs_{hero_two.name}", dpi=300)
+    print(f"\033[92mFINISH:\033[0m Simulation Complete. Figure saved as\033[1m '{hero_one.name}_vs_{hero_two.name}.png'\033[0m")
 
 
 if __name__ == '__main__':

@@ -57,11 +57,8 @@ class Item:
     def _set_shield(self, val):
         self.changes["shield"] = val
 
-    def warn_a(self):
-        print(f"\033[93m WARN i-a:\033[0m \033[1m'{self.name}'\033[0m ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
-
-    def warn_p(self):
-        print(f"\033[93m WARN i-p:\033[0m \033[1m'{self.name}'\033[0m PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+    def warn(self, code, msg):
+        print(f"\033[93mWARN {code}:\033[0m \033[1m'{self.name}'\033[0m - {msg}")
 
 
 # Start of Red Tree
@@ -80,8 +77,8 @@ class TornadoTrigger(Item):
 
         self.__buff_speed_time = 0
 
-    def on_basic(self, hero, the_attack):
-        if the_attack["hit"]:
+    def on_attack(self, hero, the_attack):
+        if the_attack["hit"] and the_attack["with_basic"] and the_attack["on_hero"]:
             self.__buff_speed_time = 1200
             hero.stats["move_speed"] += 0.1 * hero.stats["base_move_speed"]
         return the_attack
@@ -111,11 +108,11 @@ class PoisonedShiv(Item):
 
         self.__hit_num_odd = False
 
-    def on_basic(self, hero, the_attack):
+    def on_attack(self, hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
-        if the_attack["hit"]:
+        if the_attack["hit"] and the_attack["with_basic"]:
             self.__hit_num_odd = not self.__hit_num_odd
             the_attack["mortal_wounds"] = max(the_attack["mortal_wounds"], 1200 if not self.__hit_num_odd else 0)
         return the_attack
@@ -136,8 +133,8 @@ class BoneSaw(Item):
         self.__stacks = 0
         self.__timer = 0
 
-    def on_basic(self, hero, the_attack):
-        if the_attack["hit"]:
+    def on_attack(self, hero, the_attack):
+        if the_attack["hit"] and the_attack["with_basic"]:
             self.__stacks = min(self.__stacks + 1, 5)
             self.__timer = 3000
         the_attack["armor_peirce"] = max(self.__stacks * 0.1 + the_attack["armor_peirce"], the_attack["armor_peirce"])
@@ -159,7 +156,7 @@ class BarbedNeedle(Item):
         super()._set_vampirism(0.1)
 
     @staticmethod
-    def on_basic(hero, the_attack):
+    def on_attack(hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
@@ -190,7 +187,7 @@ class BookOfEulogies(Item):
         super()._set_vampirism(0.05)
 
     @staticmethod
-    def on_basic(hero, the_attack):
+    def on_attack(hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
             new_hp = hero.stats["current_hp"] + 25 if the_attack["with_basic"] else hero.stats["current_hp"] + 10
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
@@ -212,15 +209,15 @@ class BreakingPoint(Item):
         self.__timer = 0
         self.__leftover = 0
 
-    def on_basic(self, hero, the_attack):
-        if the_attack["hit"]:
+    def on_attack(self, hero, the_attack):
+        if the_attack["hit"] and the_attack["with_basic"]:
             self.__timer = 2500
             the_attack["wp_dmg"] += 5 * self.__stacks
         return the_attack
 
     def post_basic(self, hero, ack, result):
         decay_stacks = True
-        if ack["wp_dmg"]:
+        if ack["wp_dmg"] and ack["on_hero"]:
             acc_dmg = ack["wp_dmg"] + self.__leftover
             while True:
                 dmg_needed = 100 + self.__stacks * (5 if hero.stats["ismelee"] else 10)
@@ -270,7 +267,7 @@ class MinionsFoot(Item):
         self.__is_first = True
         self._normal_crit_perc = 0.0
 
-    def on_basic(self, hero, the_attack):
+    def on_attack(self, hero, the_attack):
         if the_attack["hit"]:
             if self.__is_first:
                 self._normal_crit_perc = hero.stats["crit_chance"]
@@ -309,14 +306,17 @@ class SerpentMask(Item):
             self.__points = min(self.__points + (self.__max_points / 40), self.__max_points)
         else:
             self.__timer -= 1
-        if self.__points:
-            if self.__points - ack["wp_dmg"] < 0:
-                recover = (0.25 * self.__points) + (hero.stats["vampirism"] * (ack["wp_dmg"] - self.__points))
-                self.__points = 0
-            else:
-                self.__points -= ack["wp_dmg"]
-                recover = 0.25 * ack["wp_dmg"]
-            result["recover"] = recover
+        if ack["on_hero"]:
+            if self.__points:
+                if self.__points - ack["wp_dmg"] < 0:
+                    recover = (0.25 * self.__points) + (hero.stats["vampirism"] * (ack["wp_dmg"] - self.__points))
+                    self.__points = 0
+                else:
+                    self.__points -= ack["wp_dmg"]
+                    recover = 0.25 * ack["wp_dmg"]
+                result["recover"] = recover
+        else:
+            result["recover"] = ack["wp_dmg"] * hero.stats["vampirism"]
         return result
 
 
@@ -334,7 +334,7 @@ class Spellsword(Item):
         super()._set_energy_regen(2)
 
     @staticmethod
-    def on_basic(hero, the_attack):
+    def on_attack(hero, the_attack):
         if the_attack["hit"]:
             hero.stats["energy"] = max(hero.stats["base_energy"],
                                        hero.stats["energy"] + (12 if the_attack["on_hero"] else 4))
@@ -348,7 +348,7 @@ class TensionBow(Item):
         super()._set_armor_peirce(0.3)
         self.__timer = 0
 
-    def on_basic(self, hero, the_attack):
+    def on_attack(self, hero, the_attack):
         if the_attack["hit"] and self.__timer == 0:
             self.__timer = 6000
             the_attack["wp_dmg"] += 100 + hero.stats["wp"]
@@ -368,7 +368,7 @@ class Aegis(Item):
         super()._set_armor(45)
         super()._set_base_hp(200)
         # TODO: Activate: Reflex Block (45s cooldown)
-        self.warn_a()
+        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 class AtlasPauldron(Item):
@@ -376,7 +376,7 @@ class AtlasPauldron(Item):
         super().__init__("Atlas Pauldron")
         super()._set_armor(65)
          # TODO: Activate: Maim nearby enemies, lowering their attack speed by 50% of their total for 4s in a 5-meter range. Additionaly reduces weapon power damage by 30%. (45s cooldown)
-        self.warn_a()
+        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 class CapacitorPlate(Item):
@@ -388,7 +388,7 @@ class CapacitorPlate(Item):
         super()._set_cooldown(0.15)
         super()._set_energy_regen_multi(0.025)
         # TODO: Passive: Your heals and barriers are 15% stronger. Passive: Your heals and barriers also grant other allied heroes bonus movement speed for 2s. (10s cooldown per hero)
-        self.warn_p()
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 class CelestialShroud(Item):
@@ -396,7 +396,7 @@ class CelestialShroud(Item):
         super().__init__("Celestial Shroud")
         super()._set_shield(95)
         # TODO: Passive: Grants immunity to abilities and damaging debuffs. Disabled for 35s shortly after negating ability damage.
-        self.warn_p()
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 
@@ -411,7 +411,24 @@ class Crucible(Item):
         super().__init__("Crucible")
         super()._set_base_hp(550)
         # TODO: Activate: Trigger Reflex Block for you and nearby teammates. (75s cooldown)
-        self.warn_a()
+        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+
+class Dragonheart(Item):
+    def __init__(self):
+        super().__init__("Dragonheart")
+        super()._set_base_hp(350)
+
+
+class FountainOfRenewal(Item):
+    def __init__(self):
+        super().__init__("Fountain of Renewal")
+        super()._set_base_hp(400)
+        super()._set_shield(40)
+        super()._set_armor(40)
+        # TODO: Passive: Lifespring Activate: Heals you and nearby allies for 2 health for each % missing health per second for 3s. (75s cooldown)
+        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
 
 
 class KineticShield(Item):
@@ -420,6 +437,118 @@ class KineticShield(Item):
         super()._set_shield(55)
 
 
+class Lifespring(Item):
+    def __init__(self):
+        super().__init__("Lifespring")
+        super()._set_base_hp(200)
+        # TODO: Passive: Regenerate 2.5% of your missing health per second whenever you are out of combat with enemy heroes for 5s.
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+
+class LightArmor(Item):
+    def __init__(self):
+        super().__init__("Light Armor")
+        super()._set_armor(25)
+
+
+class LightShield(Item):
+    def __init__(self):
+        super().__init__("Light Shield")
+        super()._set_shield(25)
+
+
+class MetalJacket(Item):
+    def __init__(self):
+        super().__init__("Metal Jacket")
+        super()._set_armor(95)
+        # TODO: Passive: Reduces incoming damage from Basic Attacks by 15%.
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+
+class Oakheart(Item):
+    def __init__(self):
+        super().__init__("Oakheart")
+        super()._set_base_hp(150)
+
+
+class Pulseweave(Item):
+    def __init__(self):
+        super().__init__("Pulseweave")
+        super()._set_base_hp(600)
+        # TODO: Passive: Upon taking damage from an enemy hero, gain bonus movement speed for 3s then deal 50
+        #  (+25% of bonus health) damage and slow enemies by 5% (+0.02% of bonus health) for 2s. Also deals 25%
+        #  of the burst damage per second to nearby enemies while available. (30s cooldown) Passive: +10% base
+        #  movement speed Passive: Lifespring
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+
+class ReflexBlock(Item):
+    def __init__(self):
+        super().__init__("Reflex Block")
+        super()._set_base_hp(150)
+        # TODO: Activate: Gain a barrier worth 100-600 (level 1-12) and block all debuffs for 1.5s. (75s cooldown)
+        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
+
+
+class RooksDecree(Item):
+    def __init__(self):
+        super().__init__("Rook's Decree")
+        super()._set_base_hp(500)
+        super()._set_armor(30)
+        super()._set_shield(30)
+        super()._set_cooldown(0.05)
+        # TODO: Passive: After using an ability, your next basic attack against an enemy hero applies a barrier (150 + 15% of bonus health) to all nearby allies for 2 seconds (10s cooldown).
+        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+        self.warn("i-a", "PASSIVE EFFECT relies on ability use - not a current feature - and will not be activated. May skew results.")
+
+    # def on_attack(self):
+
+class SlumberingHusk(Item):
+    def __init__(self):
+        super().__init__("Slumbering Husk")
+        super()._set_armor(55)
+        super()._set_shield(55)
+        self.__cooldown = 0
+        self.__effect_active = False
+        self.__effect_timer = 2000
+        self.__dmg_timer = 0
+        self.__hero_hp_for_timer = 0
+
+
+    def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
+        if pre_dmg:
+            if not self.__cooldown:
+                if not self.__dmg_timer:
+                    self.__hero_hp_for_timer = hero.stats["current_hp"]
+                    self.__dmg_timer = 1000
+            return ack
+
+        if not self.__cooldown:
+            if 0.25 <= ((self.__hero_hp_for_timer - hero.stats["current_hp"]) / hero.stats["base_hp"]):
+                self.__effect_active = True
+                self.__cooldown = 30000
+            if self.__dmg_timer:
+                self.__dmg_timer -= 1
+        else:
+            self.__cooldown -= 1
+        if self.__effect_active:
+            if self.__effect_timer == 2000:
+                hero.stats["current_hp"] *= 2
+                hero.stats["base_hp"] *= 2
+            self.__effect_timer -= 1
+        if not self.__effect_timer:
+            hero.stats["current_hp"] /= 2
+            hero.stats["base_hp"] /= 2
+            self.__effect_active = False
+            self.__effect_timer = 2000
+        return ack
+
+
+class Warmail(Item):
+    def __init__(self):
+        super().__init__("Warmail")
+        super()._set_armor(30)
+        super()._set_shield(30)
 
 # Start of Blue Tree
 

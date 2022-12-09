@@ -130,7 +130,7 @@ class Hero:
         # Consider Item Buffs for basic attacks
         for item in self.items:
             try:
-                the_attack = item.on_basic(self, the_attack)
+                the_attack = item.on_attack(self, the_attack)
             except AttributeError:
                 continue
         # expected weapon dmg on crit
@@ -140,7 +140,8 @@ class Hero:
 
     def receive_attack(self, the_attack):
         ack = {
-            "true_dmg": the_attack['true_dmg']
+            "true_dmg": the_attack['true_dmg'],
+            "on_hero": True
         }
         # calc wp and cp dmg received
         wp_without_p = (the_attack["wp_dmg"] / (1 + (self.stats["armor"] / 100))) * (1 - the_attack["armor_peirce"])
@@ -149,14 +150,20 @@ class Hero:
         cp_with_p = the_attack["cp_dmg"] * the_attack["shield_peirce"]
         ack["cp_dmg"] = cp_with_p + cp_without_p
         ack["wp_dmg"] = wp_with_p + wp_without_p
-        # check to see if any items trigger on receiving damage
+        # check to see if any items trigger before taking damage
         for item in self.items:
             try:
-                ack = item.on_damage_recive(self, the_attack)
+                ack = item.on_damage_receive(self, ack, the_attack, pre_dmg=True)
             except AttributeError:
                 continue
         # take the damage
         self.stats["current_hp"] -= (ack["true_dmg"] + ack["wp_dmg"] + ack["cp_dmg"])
+        # check to see if any items trigger after taking damage
+        for item in self.items:
+            try:
+                ack = item.on_damage_receive(self, ack, the_attack, pre_dmg=False)
+            except AttributeError:
+                continue
         if the_attack["mortal_wounds"]:
             self.timers["debuff"]["mortal_wounds_timer"] = the_attack["mortal_wounds"]
         # update debuff timers
@@ -183,14 +190,8 @@ class Hero:
         regen = self.stats["energy_regen"] * self.stats["energy_regen_multi"]
         self.stats["energy"] = max(self.stats["base_energy"], self.stats["energy"] + regen)
 
-    def warn_p(self):
-        print(f"\033[93mWARN h-p:\033[0m \033[1m'{self.name}'\033[0m HERO ABILITY either not implemented or considered in combat. May skew results.")
-
-    def warn_a(self):
-        print(f"\033[93mWARN h-a:\033[0m \033[1m'{self.name}'\033[0m ABILITIES either not implemented or considered in combat. May skew results.")
-
-    def warn_g(self):
-        print(f"\033[93mWARN h-g:\033[0m \033[1m'{self.name}'\033[0m ATTACK SPEED FACTORS are estimated. May skew results.")
+    def warn(self, code, msg):
+        print(f"\033[93mWARN {code}:\033[0m \033[1m'{self.name}'\033[0m {msg}")
 
 class Amael(Hero):
     def __init__(self, level, stutter):
@@ -207,9 +208,9 @@ class Amael(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(86, 152)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
-        self.warn_g()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
+        self.warn("h-g", "ATTACK SPEED FACTORS are estimated. May skew results.")
 
 
 class Adagio(Hero):
@@ -226,8 +227,8 @@ class Adagio(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(75, 117)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Alpha(Hero):
@@ -243,8 +244,8 @@ class Alpha(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(83, 124)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Anka(Hero):
@@ -262,9 +263,9 @@ class Anka(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(82, 152)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
-        self.warn_g()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
+        self.warn("h-g", "ATTACK SPEED FACTORS are estimated. May skew results.")
 
 
 class Ardan(Hero):
@@ -281,8 +282,8 @@ class Ardan(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(80, 140)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Baptiste(Hero):
@@ -300,9 +301,9 @@ class Baptiste(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(78, 167)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
-        self.warn_g()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
+        self.warn("h-g", "ATTACK SPEED FACTORS are estimated. May skew results.")
 
 
 class Baron(Hero):
@@ -319,8 +320,8 @@ class Baron(Hero):
         super()._set_shield(21, 57)
         super()._set_wp(71, 130)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Blackfeather(Hero):
@@ -337,8 +338,8 @@ class Blackfeather(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(81, 160)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Caine(Hero):
@@ -353,9 +354,9 @@ class Caine(Hero):
         super()._set_shield(20, 58)
         super()._set_wp(82, 159)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
-        self.warn_g()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
+        self.warn("h-g", "ATTACK SPEED FACTORS are estimated. May skew results.")
 
 
 class Catherine(Hero):
@@ -373,8 +374,8 @@ class Catherine(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(74, 141)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Celeste(Hero):
@@ -390,8 +391,8 @@ class Celeste(Hero):
         super()._set_armor(25, 75)
         super()._set_shield(20, 55)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Churnwalker(Hero):
@@ -409,8 +410,8 @@ class Churnwalker(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(80, 165)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Flicker(Hero):
@@ -428,8 +429,8 @@ class Flicker(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(77, 155)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Fortress(Hero):
@@ -447,8 +448,8 @@ class Fortress(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(73, 156)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Glaive(Hero):
@@ -466,8 +467,8 @@ class Glaive(Hero):
         super()._set_shield(20, 60)
         super()._set_wp(70, 156)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Grace(Hero):
@@ -485,8 +486,8 @@ class Grace(Hero):
         super()._set_shield(25, 75)
         super()._set_wp(73, 152)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
 
 
 class Miho(Hero):
@@ -503,6 +504,6 @@ class Miho(Hero):
         super()._set_shield(20, 55)
         super()._set_wp(75, 152)
         # TODO: hero perk and abilities
-        self.warn_a()
-        self.warn_p()
-        self.warn_g()
+        self.warn("h-a", "ABILITIES either not implemented or considered in combat. May skew results.")
+        self.warn("h-p", "HERO PERK either not implemented or considered in combat. May skew results.")
+        self.warn("h-g", "ATTACK SPEED FACTORS are estimated. May skew results.")
