@@ -46,7 +46,6 @@ Set if Hero One preforms perfect stutter steps.
 #### --stutter_one
 Set if Hero Two preforms perfect stutter steps.
 
-
 ## WARN and ERROR messages
 When running this tool, there are warning and error messages that may pop up.
 The warnings are there to describe how the current implementation might affect the results.
@@ -54,8 +53,13 @@ The error messages are if there are errors in the command.
 
 Both message types provide a code and a description of what is happening as the program runs.
 
+## Note about Critical Hits
+Critical Hits are calculated in terms of expected value. This means that for 100 damage with a 50% critical chance
+and 50% critical damage, each hit is calculated as 100 * (1 + (0.5 * 0.5)) = 125 damage. This is to give
+consistent and expected results.
+
 ## Implemented Heroes
-As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case insensitive)
+As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case-insensitive)
 
 If it is not on this list, it is not implemented yet.
 - Amael
@@ -83,6 +87,8 @@ If it is not on this list, it is not implemented yet.
 ### Red Tree
 - SorrowBlade
 - PoisonedShiv
+  - The mortal wounds is implemented so that every second attack applies effect, while in-game, there must be two hits on
+    the same target. You can ignore this as this is a 1v1 situation.
 - SerpentsMask
 - WeaponBlade
 - BreakingPoint
@@ -118,12 +124,15 @@ If it is not on this list, it is not implemented yet.
 - LightArmor
 - LightShield
 - MetalJacket
+  - It's unclear when the passive effect is supposed to be considered/if affects true damage when calculating the damage to be taken. 
+    This tool assumes that the damage reduction from the passive includes true damage and is considered right before taking the damage.
 - Oakheart
 - Pulseweave
 - ProtectorContract
 - ReflexBlock
 - RooksDecree
 - SlumberingHusk
+  - Fortified health is treated as doubling current health for effect duration. In the graph, this shows up as a massive heal.
 - Warmail
 
 

@@ -466,14 +466,18 @@ class MetalJacket(Item):
     def __init__(self):
         super().__init__("Metal Jacket")
         super()._set_armor(95)
-        # TODO: Passive: Reduces incoming damage from Basic Attacks by 15%.
-        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+        self.warn("i-i",
+                  "unclear when the PASSIVE EFFECT is supposed to be considered/if affects true damage."
+                  " Assuming damage reduction from the passive includes true damage and is considered "
+                  "right before taking the damage. May skew results.")
+
 
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
         if the_attack["with_basic"]:
             ack["true_dmg"] *= 0.85
             ack["cp_dmg"] *= 0.85
             ack["wp_dmg"] *= 0.85
+        return ack
 
 class Oakheart(Item):
     def __init__(self):

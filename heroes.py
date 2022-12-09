@@ -135,7 +135,7 @@ class Hero:
                 continue
         # expected weapon dmg on crit
         if self.stats["crit_chance"]:
-            the_attack["wp_dmg"] *= (1 + self.stats["crit_damage"]) * min(self.stats["crit_chance"], 1)
+            the_attack["wp_dmg"] *= 1 + (self.stats["crit_damage"] * min(self.stats["crit_chance"], 1))
         return the_attack
 
     def receive_attack(self, the_attack):
