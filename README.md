@@ -53,92 +53,117 @@ The error messages are if there are errors in the command.
 
 Both message types provide a code and a description of what is happening as the program runs.
 
-## Note about Critical Hits
+## Note About Critical Hits
 Critical Hits are calculated in terms of expected value. This means that for 100 damage with a 50% critical chance
 and 50% critical damage, each hit is calculated as 100 * (1 + (0.5 * 0.5)) = 125 damage. This is to give
 consistent and expected results.
 
+## Note About Item Actives
+Item actives trigger on certain events within the simulation. This is documented under each item it effects.
+It is done this way so as to consider the use of actives, however, this may not be optimal play. Too much logic otherwise.
+Someone can clone and implement this in a different way if they wish.
+
 ## Implemented Heroes
 As an argument for hero_one or hero_two, you can set the hero by typing one of these names (case-insensitive)
 
-If it is not on this list, it is not implemented yet.
-- Amael
-- Adagio
-- Alpha
-- Anka
-- Ardan
-- Baptiste
-- Baron
-- Blackfeather
-- Caine
-- Catherine
-- Celeste
-- Churnwalker
-- Flicker
-- Fortress
-- Glaive
-- Grace
-- Miho
+***There are currently no abilities or hero perks implemented yet - This will come - as it is, some heros may appear weaker than in reality***
+
+- **Amael**
+- **Adagio**
+- **Alpha**
+- **Anka**
+- **Ardan**
+- **Baptiste**
+- **Baron**
+- **Blackfeather**
+- **Caine**
+- **Catherine**
+- **Celeste**
+- **Churnwalker**
+- **Flicker**
+- **Fortress**
+- **Glaive**
+- **Grace**
+- **Miho**
+- ***No other heroes yet***
+  - Entering the numbers is grueling and horrible! 
+  - Sorry! 
+  - I'll get to this soon!
 
 ## Implemented Items
 As an argument for after items_one or items_two, you can set the item by typing one of these names (case insensitive)
-
-If it is not on this list, it is not implemented yet.
 ### Red Tree
-- BarbedNeedle
-- BookOfEulogies
-- BoneSaw
+- **BarbedNeedle**
+- **BookOfEulogies**
+- **BoneSaw**
   - Stacks decay one per 100ms after delay of not hitting (may be different than in-game)
-- BlazingSalvo
-- BreakingPoint
-- HeavySteel
-- LuckyStrike
-- MinionsFoot
-- PiercingSpear
-- PoisonedShiv
+- **BlazingSalvo**
+- **BreakingPoint**
+- **HeavySteel**
+- **LuckyStrike**
+- **MinionsFoot**
+- **PiercingSpear**
+- **PoisonedShiv**
   - The mortal wounds is implemented so that every second attack applies effect, while in-game, there must be two hits on
     the same target. You can ignore this as this is a 1v1 situation.
-- SixSins
-- SerpentsMask
-- SorrowBlade
-- Spellsword
-- SwiftShooter
-- TensionBow
-- TornadoTrigger
-- TyrantsMonocle
-- WeaponBlade
+- **SixSins**
+- **SerpentsMask**
+- **SorrowBlade**
+- **Spellsword**
+- **SwiftShooter**
+- **TensionBow**
+- **TornadoTrigger**
+- **TyrantsMonocle**
+- **WeaponBlade**
 
 ### Blue Tree
 - not implemented
 
 ### Defense
-- Aegis
-- AtlasPauldron
-- CapacitorPlate
-- CelestialShroud
-- CoatofPlates
-- Crucible
-- Dragonheart
-- FountainOfRenewal
-- KineticShield
-- Lifespring
-- LightArmor
-- LightShield
-- MetalJacket
-  - It's unclear when the passive effect is supposed to be considered/if affects true damage when calculating the damage to be taken. 
-    This tool assumes that the damage reduction from the passive includes true damage and is considered right before taking the damage.
-- Oakheart
-- Pulseweave
+- **Aegis**
+  - Active triggers when available to block stun or silence. 
+    - This behaves exactly like reflex block. 
+    - May not be optimal.
+- **AtlasPauldron**
+  - active not implemented
+- **CapacitorPlate**
+  - passive not implemented
+- **CelestialShroud**
+- **CoatofPlates**
+- **Crucible**
+  - Active triggers when available to block stun or silence. 
+      - Since 1v1, this behaves exactly like reflex block. 
+      - May not be optimal.
+- **Dragonheart**
+- **FountainOfRenewal**
+  - Activates when holder is less that 25% health. 
+    - This may not be optimal
+- **KineticShield**
+- **Lifespring**
+- **LightArmor**
+- **LightShield**
+- **MetalJacket**
+  - It's unclear when the passive effect is supposed to be considered/if affects true damage when calculating the damage to be taken.
+  - This tool assumes that the damage reduction from the passive:
+    - Includes true damage
+    - Is considered right before taking the damage.
+- **Oakheart**
+- **Pulseweave**
   - Current state of program assumes that heroes are right next to each other, thus maximizing the damage of this item.
   - "Sprint" active is not well documented. Assumes +2 move speed.
-  - lifespring passive not implemented
-- ProtectorContract
-- ReflexBlock
-  - Active triggers when available and an attack would otherwise stun or silence the holder. In the graph, this shows up as an change in health for effect duration.
-- RooksDecree
-- SlumberingHusk
-  - Fortified health is treated as doubling current health for effect duration.In the graph, this shows up as an change in health for effect duration.
-- Warmail
+- **ProtectorContract**
+  - Passive ability only activates on ability use and only affects teammates. 
+    - Since no teammates in 1v1, passive is not implemented.
+- **ReflexBlock**
+  - Active triggers when available and an attack would otherwise stun or silence the holder. 
+  - In the graph, this shows up as an change in health for effect duration.
+- **RooksDecree**
+  - Passive ability only activates on ability use and only affects teammates. 
+    - Since no teammates in 1v1, passive is not implemented.
+- **SlumberingHusk**
+  - Fortified health is treated as doubling current health for effect duration.
+  - In the graph, this shows up as an change in health for effect duration.
+- **Warmail**
 
 
 ### Utility
