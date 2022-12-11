@@ -5,8 +5,8 @@ class Hero:
         self.stats = {
             "level": level, "stutter": stutter, "crit_damage": 0.5, "ismelee": False,
             "attack_cooldown": 0, "attack_delay": 0, "ss_penalty": 0, "as_modifier": 0, "base_hp": 0,
-            "current_hp": 0, "hp_regen": 0, "base_energy": 0, "energy": 0, "energy_regen": 0,
-            "energy_regen_multi": 1.0, "wp": 0, "cp": 0,
+            "bonus_hp": 0, "current_hp": 0, "hp_regen": 0.0, "base_energy": 0, "energy": 0, "energy_regen": 0,
+            "energy_regen_multi": 1.0, "wp": 0, "cp": 0, "move_speed_ratio": 1.0,
             "base_as": 0, "bonus_as": 0.0, "armor": 0, "shield": 0, "attack_range": 0, "move_speed": 0,
             "base_move_speed": 0, "vampirism": 0.0, "crit_chance": 0.0, "cooldown": 0.0, "armor_peirce": 0.0,
             "shield_peirce": 0.0, "crystal_lifesteal": 0, "uses_focus": False, "base_focus": 0,  "focus": 0,
@@ -15,10 +15,15 @@ class Hero:
         self.timers = {
             "debuff": {
                 "mortal_wounds_timer": 0,
+                "stun": 0,
+                "silence": 0
             },
             "attack": {
                 "attack_delay": 0,
                 "attack_cooldown": 0
+            },
+            "regen": {
+                "delay": 1000
             }
         }
 
@@ -36,7 +41,6 @@ class Hero:
 
     def _set_base_hp(self, at_level_1, at_level_12):
         self.stats["base_hp"] = self._calc_base_stat((at_level_1, at_level_12))
-        self.stats["current_hp"] = self.stats["base_hp"]
 
     def _set_hp_regen(self, at_level_1, at_level_12):
         self.stats["hp_regen"] = self._calc_base_stat((at_level_1, at_level_12))
@@ -95,7 +99,8 @@ class Hero:
                 else:
                     self.stats[k] += v
         # Set current HP
-        self.stats["current_hp"] = self.stats["base_hp"]
+        self.stats["current_hp"] = self.stats["base_hp"] + self.stats["bonus_hp"]
+        self.stats["move_speed"] += self.stats["base_move_speed"] * self.stats["move_speed_ratio"]
 
     def basic_attack(self):
         the_attack = {
@@ -109,7 +114,11 @@ class Hero:
             "on_minion": False,
             "kill_minion": False,
             "on_hero": True,
-            "with_basic": True
+            "with_basic": True,
+            "stun": False,
+            "silence": False,
+            "slow": 0,
+            "slow_duration": 0,
         }
         # Hero hits at this ms
         if not self.timers["attack"]["attack_cooldown"]:
@@ -141,7 +150,8 @@ class Hero:
     def receive_attack(self, the_attack):
         ack = {
             "true_dmg": the_attack['true_dmg'],
-            "on_hero": True
+            "on_hero": True,
+            "prevent_cc": False
         }
         # calc wp and cp dmg received
         wp_without_p = (the_attack["wp_dmg"] / (1 + (self.stats["armor"] / 100))) * (1 - the_attack["armor_peirce"])
@@ -164,8 +174,10 @@ class Hero:
                 ack = item.on_damage_receive(self, ack, the_attack, pre_dmg=False)
             except AttributeError:
                 continue
-        if the_attack["mortal_wounds"]:
-            self.timers["debuff"]["mortal_wounds_timer"] = the_attack["mortal_wounds"]
+        if not ack["prevent_cc"]:
+            if the_attack["mortal_wounds"]:
+                self.timers["debuff"]["mortal_wounds_timer"] = the_attack["mortal_wounds"]
+            #TODO: Stun, Silence, etc.
         # update debuff timers
         for effect, time in self.timers["debuff"].items():
             if time > 0:
@@ -173,22 +185,29 @@ class Hero:
         return ack
 
     def process_attack_ack(self, ack):
+        if not self.timers["regen"]["delay"]:
+            self.regen_energy()
+            self.regen_hp()
+        else:
+            self.timers["regen"]["delay"] -= 1
         result = {
             "recover": 0
         }
         for item in self.items:
             try:
-                result = item.post_basic(self, ack, result)
+                result = item.post_attack(self, ack, result)
             except AttributeError:
                 continue
         if self.timers["debuff"]["mortal_wounds_timer"] > 0:
             result["recover"] /= 3
-        self.stats["current_hp"] = min(self.stats["base_hp"],  self.stats["current_hp"] + result["recover"])
-        self.regen_energy()
+        self.stats["current_hp"] = min(self.stats["base_hp"] + self.stats["bonus_hp"],  self.stats["current_hp"] + result["recover"])
 
     def regen_energy(self):
         regen = self.stats["energy_regen"] * self.stats["energy_regen_multi"]
         self.stats["energy"] = max(self.stats["base_energy"], self.stats["energy"] + regen)
+
+    def regen_hp(self):
+        self.stats["current_hp"] = min(self.stats["base_hp"] + self.stats["bonus_hp"], self.stats["current_hp"] + (self.stats["hp_regen"] * (self.stats["base_hp"] + self.stats["bonus_hp"])))
 
     def warn(self, code, msg):
         print(f"\033[93mWARN {code}:\033[0m \033[1m'{self.name}'\033[0m {msg}")

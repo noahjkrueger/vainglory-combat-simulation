@@ -85,27 +85,28 @@ As an argument for after items_one or items_two, you can set the item by typing 
 
 If it is not on this list, it is not implemented yet.
 ### Red Tree
-- SorrowBlade
+- BarbedNeedle
+- BookOfEulogies
+- BoneSaw
+  - Stacks decay one per 100ms after delay of not hitting (may be different than in-game)
+- BlazingSalvo
+- BreakingPoint
+- HeavySteel
+- LuckyStrike
+- MinionsFoot
+- PiercingSpear
 - PoisonedShiv
   - The mortal wounds is implemented so that every second attack applies effect, while in-game, there must be two hits on
     the same target. You can ignore this as this is a 1v1 situation.
-- SerpentsMask
-- WeaponBlade
-- BreakingPoint
-- BarbedNeedle
-- TensionBow
-- MinionsFoot
-- BookOfEulogies
-- PiercingSpear
-- LuckyStrike
-- HeavySteel
-- BlazingSalvo
-- SwiftShooter
 - SixSins
+- SerpentsMask
+- SorrowBlade
 - Spellsword
-- BoneSaw
+- SwiftShooter
+- TensionBow
 - TornadoTrigger
 - TyrantsMonocle
+- WeaponBlade
 
 ### Blue Tree
 - not implemented
@@ -128,11 +129,15 @@ If it is not on this list, it is not implemented yet.
     This tool assumes that the damage reduction from the passive includes true damage and is considered right before taking the damage.
 - Oakheart
 - Pulseweave
+  - Current state of program assumes that heroes are right next to each other, thus maximizing the damage of this item.
+  - "Sprint" active is not well documented. Assumes +2 move speed.
+  - lifespring passive not implemented
 - ProtectorContract
 - ReflexBlock
+  - Active triggers when available and an attack would otherwise stun or silence the holder. In the graph, this shows up as an change in health for effect duration.
 - RooksDecree
 - SlumberingHusk
-  - Fortified health is treated as doubling current health for effect duration. In the graph, this shows up as a massive heal.
+  - Fortified health is treated as doubling current health for effect duration.In the graph, this shows up as an change in health for effect duration.
 - Warmail
 
 
