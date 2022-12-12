@@ -119,6 +119,7 @@ class Hero:
             "wp_dmg": 0.0,
             "cp_dmg": 0.0,
             "armor_peirce": self.stats["armor_peirce"],
+            "shred": 0,
             "shield_peirce": self.stats["shield_peirce"],
             "hit": False,
             "on_minion": False,
@@ -197,7 +198,8 @@ class Hero:
             "prevent_cc": False
         }
         # calc wp and cp dmg received
-        wp_without_p = (the_attack["wp_dmg"] / (1 + (self.stats["armor"] / 100))) * (1 - the_attack["armor_peirce"])
+        armor = self.stats["armor"] * (1 - the_attack["shred"])
+        wp_without_p = (the_attack["wp_dmg"] / (1 + (armor / 100))) * (1 - the_attack["armor_peirce"])
         cp_without_p = the_attack["cp_dmg"] / (1 + (self.stats["shield"] / 100)) * (1 - the_attack["shield_peirce"])
         wp_with_p = the_attack["wp_dmg"] * the_attack["armor_peirce"]
         cp_with_p = the_attack["cp_dmg"] * the_attack["shield_peirce"]
@@ -235,6 +237,7 @@ class Hero:
         if not self.timers["regen"]["delay"]:
             self._regen_energy()
             self._regen_hp()
+            self.timers["regen"]["delay"] = 1000
         else:
             self.timers["regen"]["delay"] -= 1
         result = {
@@ -378,7 +381,7 @@ class Baptiste(Hero):
 class Baron(Hero):
     def __init__(self, level, stutter):
         super().__init__("Baron", level, stutter)
-        super()._set_as_factors(1000, 500, 200, 0.6)
+        super()._set_as_factors(1000, 500, 200, 0.8)
         super()._set_base_hp(679, 2054)
         super()._set_base_energy(320, 815)
         super()._set_energy_regen(6.67, 18)

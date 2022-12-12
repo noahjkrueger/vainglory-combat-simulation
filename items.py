@@ -100,7 +100,7 @@ class BoneSaw(Item):
         if the_attack["hit"] and the_attack["with_basic"]:
             self.__stacks = min(self.__stacks + 1, 5)
             self.__timer = 3000
-        the_attack["armor_peirce"] = max(self.__stacks * 0.1 + the_attack["armor_peirce"], the_attack["armor_peirce"])
+        the_attack["shred"] = self.__stacks * 0.1
         return the_attack
 
     def post_attack(self, hero, ack, result):
