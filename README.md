@@ -125,9 +125,9 @@ As an argument for after items_one or items_two, you can set the item by typing 
     - This behaves exactly like reflex block. 
     - May not be optimal.
 - **AtlasPauldron**
-  - active not implemented
+  - Active is used whenever available
 - **CapacitorPlate**
-  - passive not implemented
+  - Since 1v1, passive only helps the holder.
 - **CelestialShroud**
 - **CoatofPlates**
 - **Crucible**
