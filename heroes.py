@@ -14,7 +14,7 @@ class Hero:
         }
         self.timers = {
             "attack": {
-                "attack_delay": self.stats["attack_delay"],
+                "attack_delay": 0,
                 "attack_cooldown": 0
             },
             "regen": {
@@ -49,8 +49,6 @@ class Hero:
         self.stats["ss_penalty"] = ss_penalty
         self.stats["as_modifier"] = modifier
         self.timers["attack"]["attack_delay"] = delay
-        if self.stats["stutter"]:
-            self.timers["attack"]["attack_delay"] += ss_penalty
 
     def _set_base_hp(self, at_level_1, at_level_12):
         self.stats["base_hp"] = self._calc_base_stat((at_level_1, at_level_12))
