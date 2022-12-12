@@ -60,8 +60,8 @@ class Item:
     def _set_shield(self, val):
         self.changes["shield"] = val
 
-    def warn(self, code, msg):
-        print(f"\033[93mWARN {code}:\033[0m \033[1m'{self.name}'\033[0m - {msg}")
+    def _warn(self, code, msg):
+        print(f"\033[93m_WARN {code}:\033[0m \033[1m'{self.name}'\033[0m - {msg}")
 
 
 # Start of Red Tree
@@ -94,7 +94,7 @@ class BoneSaw(Item):
 
         self.__stacks = 0
         self.__timer = 0
-        self.warn("i-i", "once decay is active (after 3s delay), stacks drop ever .1s. Negligible but may skew results.")
+        self._warn("i-i", "once decay is active (after 3s delay), stacks drop ever .1s. Negligible but may skew results.")
 
     def on_attack(self, hero, the_attack):
         if the_attack["hit"] and the_attack["with_basic"]:
@@ -227,7 +227,7 @@ class PoisonedShiv(Item):
         super()._set_vampirism(0.1)
 
         self.__hit_num = 0
-        self.warn("i-i", "- ignorable for 1v1, but this item only applies mortal wounds every 2 hits on same target. Current implementation does not consider change of target.")
+        self._warn("i-i", "ignorable for 1v1, but this item only applies mortal wounds every 2 hits on same target. Current implementation does not consider change of target.")
 
     def on_attack(self, hero, the_attack):
         if the_attack["hit"] and the_attack["kill_minion"]:
@@ -235,7 +235,7 @@ class PoisonedShiv(Item):
             hero.stats["current_hp"] = max(new_hp, hero.stats["base_hp"])
         if the_attack["hit"] and the_attack["with_basic"]:
             self.__hit_num = 1 if self.__hit_num == 2 else 2
-            the_attack["mortal_wounds"] = max(the_attack["mortal_wounds"], 2000 if self.__hit_num == 2 else 0)
+            the_attack["debuffs"]["mortal_wounds"]["duration"] =  2000 if self.__hit_num == 2 else 0
         return the_attack
 
     @staticmethod
@@ -375,17 +375,17 @@ class Aegis(Item):
         super()._set_shield(45)
         super()._set_armor(45)
         super()._set_bonus_hp(200)
-        self.warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. May not be optimal.")
+        self._warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. May not be optimal.")
         self.__cooldown = 0
         self.__is_active = False
         self.__active_time = 1500
 
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
-        barrier = 100 + (500 * (hero.stats["level"] - 1) / 11)
+        barrier = (100 + (500 * (hero.stats["level"] - 1) / 11)) * hero.stats["heal_barrier_multi"]
         if self.__is_active:
             ack["prevent_cc"] = True
         if pre_dmg:
-            if (the_attack["stun"] or the_attack["silence"]) and not self.__cooldown:
+            if (the_attack["debuffs"]["stun"]["duration"] or the_attack["debuffs"]["silence"]["duration"]) and not self.__cooldown:
                 hero.stats["bonus_hp"] += barrier
                 self.__is_active = True
                 self.__cooldown = 45000
@@ -406,8 +406,16 @@ class AtlasPauldron(Item):
     def __init__(self):
         super().__init__("Atlas Pauldron")
         super()._set_armor(65)
-         # TODO: Activate: Maim nearby enemies, lowering their attack speed by 50% of their total for 4s in a 5-meter range. Additionally reduces weapon power damage by 30%. (45s cooldown)
-        self.warn("i-a", "ACTIVE EFFECT either not implemented or considered in combat. May skew results.")
+        self._warn("i-a", "ACTIVE EFFECT simply activates whenever available. May not be optimal. Range also not considered.")
+        self.__cooldown = 0
+
+    def on_attack(self, hero, the_attack):
+        if not self.__cooldown:
+            self.__cooldown= 45000
+            the_attack["debuffs"]["atlas_pauldron"]["duration"] = 4000
+        else:
+            self.__cooldown -= 1
+        return the_attack
 
 
 class CapacitorPlate(Item):
@@ -417,8 +425,8 @@ class CapacitorPlate(Item):
         super()._set_armor(30)
         super()._set_bonus_hp(450)
         super()._set_cooldown(0.15)
-        # TODO: Passive: Your heals and barriers are 15% stronger. Passive: Your heals and barriers also grant other allied heroes bonus movement speed for 3s. (15s cooldown per hero)
-        self.warn("i-p", "PASSIVE EFFECT either not implemented or considered in combat. May skew results.")
+        self.changes["heal_barrier_multi"] = 1.15 # easiest way to do this
+        self._warn("i-p", "PASSIVE EFFECT speed boost does not help teammates (1v1 situation).")
 
 
 class CelestialShroud(Item):
@@ -460,17 +468,17 @@ class Crucible(Item):
     def __init__(self):
         super().__init__("Crucible")
         super()._set_bonus_hp(550)
-        self.warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. Since 1v1, this behaves exactly like reflex block. May not be optimal.")
+        self._warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. Since 1v1, this behaves exactly like reflex block. May not be optimal.")
         self.__cooldown = 0
         self.__is_active = False
         self.__active_time = 1500
 
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
-        barrier = 100 + (500 * (hero.stats["level"] - 1) / 11)
+        barrier = (100 + (500 * (hero.stats["level"] - 1) / 11)) * hero.stats["heal_barrier_multi"]
         if self.__is_active:
             ack["prevent_cc"] = True
         if pre_dmg:
-            if (the_attack["stun"] or the_attack["silence"]) and not self.__cooldown:
+            if (the_attack["debuffs"]["stun"]["duration"] or the_attack["debuffs"]["silence"]["duration"]) and not self.__cooldown:
                 hero.stats["bonus_hp"] += barrier
                 self.__is_active = True
                 self.__cooldown = 75000
@@ -499,10 +507,8 @@ class FountainOfRenewal(Item):
         super()._set_bonus_hp(400)
         super()._set_shield(40)
         super()._set_armor(40)
-        self.warn("i-a", "ACTIVE EFFECT trigger at 25% or less health. Does not help teammates (1v1 situation). May not be optimal.")
+        self._warn("i-a", "ACTIVE EFFECT trigger at 25% or less health. Does not help teammates (1v1 situation). May not be optimal.")
         self.__combat_timer = 0
-        self.__normal_hp_regen = -1
-        self.__set = False
         self.__threshold = 0.25
         self.__cooldown = 0
         self.__is_active = False
@@ -518,18 +524,15 @@ class FountainOfRenewal(Item):
             if self.__combat_timer:
                 self.__combat_timer -= 1
             if not self.__combat_timer:
-                if not self.__set:
-                    self.__normal_hp_regen = hero.stats["hp_regen"]
-                    self.__set = True
                 hero.stats["hp_regen"] = 0.015
             if the_attack["hit"]:
                 self.__combat_timer = 5000
-                hero.stats["hp_regen"] = self.__normal_hp_regen
+                hero.stats["hp_regen"] = 0
         return ack
 
     def post_attack(self, hero, ack, result):
         if self.__is_active and (self.__active_duration % 1000 == 0):
-            result["recover"] += 250 * (1 - (hero.stats["current_hp"] / (hero.stats["base_hp"] + hero.stats["bonus_hp"])))
+            result["recover"] += (250 * (1 - (hero.stats["current_hp"] / (hero.stats["base_hp"] + hero.stats["bonus_hp"])))) * hero.stats["heal_barrier_multi"]
         if self.__active_duration:
             self.__active_duration -= 1
         if self.__cooldown:
@@ -550,21 +553,16 @@ class Lifespring(Item):
         super().__init__("Lifespring")
         super()._set_bonus_hp(200)
         self.__combat_timer = 0
-        self.__normal_hp_regen = -1
-        self.__set = False
 
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
         if pre_dmg:
             if self.__combat_timer:
                 self.__combat_timer -= 1
             if not self.__combat_timer:
-                if not self.__set:
-                    self.__normal_hp_regen = hero.stats["hp_regen"]
-                    self.__set = True
                 hero.stats["hp_regen"] = 0.015
             if the_attack["hit"]:
                 self.__combat_timer = 5000
-                hero.stats["hp_regen"] = self.__normal_hp_regen
+                hero.stats["hp_regen"] = 0
         return ack
 
 
@@ -584,7 +582,7 @@ class MetalJacket(Item):
     def __init__(self):
         super().__init__("Metal Jacket")
         super()._set_armor(95)
-        self.warn("i-i",
+        self._warn("i-i",
                   "unclear when the PASSIVE EFFECT is supposed to be considered/if affects true damage."
                   " Assuming damage reduction from the passive includes true damage and is considered "
                   "right before taking the damage. May skew results.")
@@ -609,8 +607,8 @@ class Pulseweave(Item):
         super().__init__("Pulseweave")
         super()._set_bonus_hp(600)
         super()._set_move_speed_ratio(0.08)
-        self.warn("i-p", "Current state of program assumes that heroes are right next to each other, maximizing the damage of this item. May skew results.")
-        self.warn("i-i", "'Sprint' active is not well documented. Assumes +2 move speed.")
+        self._warn("i-p", "Current state of program assumes that heroes are right next to each other, maximizing the damage of this item. May skew results.")
+        self._warn("i-i", "'Sprint' active is not well documented. Assumes +2 move speed.")
         self.__is_available = True
         self.__is_active = False
         self.__cooldown = 0
@@ -618,8 +616,7 @@ class Pulseweave(Item):
         self.__pulse_timer = 0
         self.__burst = False
         self.__combat_timer = 0
-        self.__normal_hp_regen = -1
-        self.__set = False
+
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
         if pre_dmg:
             if self.__is_available and the_attack["hit"]:
@@ -628,16 +625,13 @@ class Pulseweave(Item):
                 self.__cooldown = 45000
                 hero.stats["move_speed"] += 2
                 self.__duration = 3000
-                if self.__combat_timer:
-                    self.__combat_timer -= 1
-                if not self.__combat_timer:
-                    if not self.__set:
-                        self.__normal_hp_regen = hero.stats["hp_regen"]
-                        self.__set = True
-                    hero.stats["hp_regen"] = 0.015
-                if the_attack["hit"]:
-                    self.__combat_timer = 5000
-                    hero.stats["hp_regen"] = self.__normal_hp_regen
+            if self.__combat_timer:
+                self.__combat_timer -= 1
+            if not self.__combat_timer:
+                hero.stats["hp_regen"] = 0.015
+            if the_attack["hit"]:
+                self.__combat_timer = 5000
+                hero.stats["hp_regen"] = 0
         else:
             if self.__duration == 1:
                 self.__burst = True
@@ -650,18 +644,6 @@ class Pulseweave(Item):
             if not self.__duration:
                 self.__is_active = False
                 hero.stats["move_speed"] -= 2
-            if not the_attack["hit"]:
-                if self.__combat_timer:
-                    self.__combat_timer -= 1
-                elif self.__timer:
-                    self.__timer -= 1
-                if not self.__timer and not self.__combat_timer:
-                    self.__normal_hp_regen = hero.stats["hp_regen"]
-                    hero.stats["hp_regen"] += 0.015
-            else:
-                self.__combat_timer = 5000
-                self.__timer = 1000
-                hero.stats["hp_regen"] = self.__normal_hp_regen
         return ack
 
     def on_attack(self, hero, the_attack):
@@ -674,8 +656,10 @@ class Pulseweave(Item):
                 the_attack["cp_dmg"] += pulse_dmg / 2
         if self.__burst:
             the_attack["cp_dmg"] += pulse_dmg
-            the_attack["slow"] = 0.05
-            the_attack["slow_duration"] = 3000
+            the_attack["debuffs"]["slow"] = {
+                "strength": 0.05,
+                "duration": 3000
+            }
             self.__burst = False
         return the_attack
 
@@ -685,24 +669,24 @@ class ProtectorContract(Item):
         super().__init__("Protector Contract")
         super()._set_bonus_hp(300)
         # TODO: Passive: After using an ability, your next basic attack against an enemy hero will grant 150 barrier to nearby allies for 2s. (12s cooldown)
-        self.warn("i-p", "PASSIVE EFFECT relies on ability use and only affects teammates - neither of which a current feature - and thus is not implemented or activated. May skew results.")
+        self._warn("i-p", "PASSIVE EFFECT relies on ability use and only affects teammates - neither of which a current feature - and thus is not implemented or activated. May skew results.")
 
 class ReflexBlock(Item):
     def __init__(self):
         super().__init__("Reflex Block")
         super()._set_bonus_hp(150)
-        self.warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. May not be optimal.")
+        self._warn("i-a", "ACTIVE EFFECT triggers when available to block stun or silence. May not be optimal.")
         self.__cooldown = 0
         self.__is_active = False
         self.__active_time = 1500
 
 
     def on_damage_receive(self, hero, ack, the_attack, pre_dmg=True):
-        barrier = 100 + (500 * (hero.stats["level"] - 1) / 11)
+        barrier = (100 + (500 * (hero.stats["level"] - 1) / 11)) * hero.stats["heal_barrier_multi"]
         if self.__is_active:
             ack["prevent_cc"] = True
         if pre_dmg:
-            if (the_attack["stun"] or the_attack["silence"]) and not self.__cooldown:
+            if (the_attack["debuffs"]["stun"]["duration"] or the_attack["debuffs"]["silence"]["duration"]) and not self.__cooldown:
                 hero.stats["bonus_hp"] += barrier
                 self.__is_active = True
                 self.__cooldown = 90000
@@ -729,7 +713,7 @@ class RooksDecree(Item):
         super()._set_shield(30)
         super()._set_cooldown(0.05)
         # TODO: Passive: After using an ability, your next basic attack against an enemy hero applies a barrier (150 + 15% of bonus health) to all nearby allies for 2 seconds (10s cooldown).
-        self.warn("i-p", "PASSIVE EFFECT relies on ability use and only affects teammates - neither of which a current feature - and thus is not implemented or activated. May skew results.")
+        self._warn("i-p", "PASSIVE EFFECT relies on ability use and only affects teammates - neither of which a current feature - and thus is not implemented or activated. May skew results.")
 
 
 class SlumberingHusk(Item):

@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import heroes, items
 from sys import argv
 import argparse
+from PIL import Image
 
 def err(code, msg):
     print(f"\033[91mERR {code}:\033[0m {msg}")
@@ -52,6 +53,8 @@ def create_item(item):
         return items.WeaponBlade()
     elif item.upper() == "AEGIS":
         return items.Aegis()
+    elif item.upper() == "ATLASPAULDRON":
+        return items.AtlasPauldron()
     elif item.upper() == "CAPACITOR PLATE":
         return items.CapacitorPlate()
     elif item.upper() == "CELESTIALSHROUD":
@@ -89,7 +92,7 @@ def create_item(item):
     elif item.upper() == "WARMAIL":
         return items.Warmail()
     else:
-        err("i-i", "Invalid item name \033[1m'{item}'\033[0m - misspelling, malformed or not implemented.")
+        err("i-i", f"Invalid item name \033[1m'{item}'\033[0m - misspelling, malformed or not implemented.")
 
 
 # Is there a better way to do this?
@@ -129,16 +132,15 @@ def create_hero(hero_name, level, stutter):
     elif hero_name.upper() == "MIHO":
         return heroes.Miho(level, stutter)
     else:
-        err("h-i", "Invalid hero name \033[1m'{hero_name}'\033[0m - misspelling, malformed or not implemented.")
+        err("h-i", f"Invalid hero name \033[1m'{hero_name}'\033[0m - misspelling, malformed or not implemented.")
 
 
 # Create a hero with items and other options
 def create_player(hero_name, build, level, stutter):
     if not 1 <= level <= 12:
-        err("h-l", "\033[0m Invalid level \033[1m'{hero_name}'\033[0m - valid values are in range [1, 12]")
+        err("h-l", f"\033[0m Invalid level \033[1m'{hero_name}'\033[0m - valid values are in range [1, 12]")
     if len(build) > 6:
-        warn("i-c",
-             "\033[1m Too Many Items\033[0m - more than 6 items provided; inaccurate to actual gameplay. May skew results.")
+        warn("i-c", f"\033[1m Too Many Items\033[0m - more than 6 items provided; inaccurate to actual gameplay. May skew results.")
     item_objs = list()
     for item in build:
         item_objs.append(create_item(item))
@@ -226,8 +228,8 @@ def main(args):
         h2_hp.append(hero_two.stats['current_hp'])
         # Attacks (possibly) delivered at this time
         # Maybe make points?
-        h1_attack = hero_one.basic_attack()
-        h2_attack = hero_two.basic_attack()
+        h1_attack = hero_one.attack()
+        h2_attack = hero_two.attack()
         # Get hit by opposing attack
         h1_ack = hero_one.receive_attack(h2_attack)
         h2_ack = hero_two.receive_attack(h1_attack)
@@ -245,14 +247,46 @@ def main(args):
     plt.plot(h2_hp,  label=f"Hero 2 HP", zorder=0)
     # Legend, labels and grid
     plt.legend()
-    plt.title(f"Hero 1: {hero_one.name} vs Hero 2: {hero_two.name}")
     plt.xlabel("Milliseconds")
     plt.ylabel("Points")
+    plt.title(f"Level {hero_one.stats['level']} {hero_one.name}, Level {hero_two.stats['level']} {hero_two.name}")
     plt.grid()
     plt.margins(0.01)
     plt.tight_layout()
     # Save to file
-    plt.savefig(f"{hero_one.name}_vs_{hero_two.name}", dpi=300)
+    plt.savefig(f"{hero_one.name}_vs_{hero_two.name}", dpi=200)
+    # Stich togehter with other images
+    graph = Image.open(f"{hero_one.name}_vs_{hero_two.name}.png")
+    (gw, gh) = graph.size
+    size_adj = (gw // 17, gw // 17)
+    hero_1_img = Image.open(f"images/heroes/{hero_one.name}.png")
+    hero_1_img = hero_1_img.resize(size_adj)
+    hero_2_img = Image.open(f"images/heroes/{hero_two.name}.png")
+    hero_2_img = hero_2_img.resize(size_adj)
+    hero_1_item_imgs = [Image.open(f"images/no_item.png") for x in range(0, 6)]
+    hero_2_item_imgs = [Image.open(f"images/no_item.png") for x in range(0, 6)]
+    for i in range(0, len(hero_one.items)):
+        hero_1_item_imgs[i] = Image.open(f"images/items/{hero_one.items[i].name}.png")
+    for i in range(0, len(hero_two.items)):
+        hero_2_item_imgs[i] = Image.open(f"images/items/{hero_two.items[i].name}.png")
+    (offx1, h1h) = hero_1_img.size
+    stitch = Image.new('RGB', (gw, gh + h1h), color=(255,255,255))
+    stitch.paste(graph, box=(0, size_adj[1]))
+    stitch.paste(hero_1_img, box=(offx1, 0))
+    offx1 += size_adj[0]
+    for img in hero_1_item_imgs:
+        img = img.resize(size_adj)
+        stitch.paste(img, (offx1, 0))
+        offx1 += size_adj[0]
+    stitch.paste(Image.open("images/vs.png").resize(size_adj), (offx1, 0))
+    offx1 += size_adj[0]
+    stitch.paste(hero_2_img, box=(offx1, 0))
+    offx1 += size_adj[0]
+    for img in hero_2_item_imgs:
+        img = img.resize(size_adj)
+        stitch.paste(img, (offx1, 0))
+        offx1 += size_adj[0]
+    stitch.save(f'{hero_one.name}_vs_{hero_two.name}.png')
     print(f"\033[92mFINISH:\033[0m Simulation Complete. Figure saved as\033[1m '{hero_one.name}_vs_{hero_two.name}.png'\033[0m")
 
 
