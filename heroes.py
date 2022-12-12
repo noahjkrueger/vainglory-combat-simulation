@@ -14,7 +14,7 @@ class Hero:
         }
         self.timers = {
             "attack": {
-                "attack_delay": 0,
+                "attack_delay": self.stats["attack_delay"],
                 "attack_cooldown": 0
             },
             "regen": {
@@ -168,11 +168,11 @@ class Hero:
             # AP halfs total AS -> doubles attack_cooldown
             if self.debuffs["atlas_pauldron"]["duration"]:
                 self.timers["attack"]["attack_cooldown"] *= 2
+            self.timers["attack"]["attack_delay"] = self.stats["attack_delay"]
             if not self.stats["stutter"]:
                 self.timers["attack"]["attack_delay"] += self.stats["ss_penalty"]
-            self.timers["attack"]["attack_delay"] = self.stats["attack_delay"]
         # there is no hit but reduce cooldown
-        elif self.timers["attack"]["attack_cooldown"] > 0:
+        else:
             self.timers["attack"]["attack_cooldown"] -= 1
             return the_attack
         # Base Weapon Damage
