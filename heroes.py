@@ -198,13 +198,10 @@ class Hero:
             "prevent_cc": False
         }
         # calc wp and cp dmg received
-        armor = self.stats["armor"] * (1 - the_attack["shred"])
-        wp_without_p = (the_attack["wp_dmg"] / (1 + (armor / 100))) * (1 - the_attack["armor_peirce"])
-        cp_without_p = the_attack["cp_dmg"] / (1 + (self.stats["shield"] / 100)) * (1 - the_attack["shield_peirce"])
-        wp_with_p = the_attack["wp_dmg"] * the_attack["armor_peirce"]
-        cp_with_p = the_attack["cp_dmg"] * the_attack["shield_peirce"]
-        ack["cp_dmg"] = cp_with_p + cp_without_p
-        ack["wp_dmg"] = wp_with_p + wp_without_p
+        armor = self.stats["armor"] * (1 - the_attack["shred"]) * (1 - the_attack["armor_peirce"])
+        sheild = self.stats["shield"] *  (1 - the_attack["shield_peirce"])
+        ack["cp_dmg"] = the_attack["cp_dmg"] / (1 + (sheild / 100))
+        ack["wp_dmg"] = the_attack["wp_dmg"] / (1 + (armor / 100))
         # check to see if any items trigger before taking damage
         for item in self.items:
             try:
